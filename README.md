@@ -1,6 +1,6 @@
 # Station Management System
 
-A modern React-based frontend application for managing stations. Built with Vite, React Router, Tailwind CSS, and Axios for API communication.
+A modern React-based frontend application for managing stations. Built with Vite, React Router, Tailwind CSS, and fetch for API communication.
 
 ## Features
 
@@ -16,7 +16,6 @@ A modern React-based frontend application for managing stations. Built with Vite
 - **Build Tool**: Vite 7.1.7
 - **Styling**: Tailwind CSS 4.1.13
 - **Routing**: React Router DOM 6.30.2
-- **HTTP Client**: Axios 1.6.0
 - **Development**: ESLint for code quality
 
 ## Getting Started
