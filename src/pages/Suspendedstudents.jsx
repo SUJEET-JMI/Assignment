@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { Search, MoreHorizontal, ChevronDown } from "lucide-react";
 import Badge from "../components/Badge";
-import { useNavigate,useLocation } from "react-router-dom";
 
-const statusOptions = ["Approved", "Suspended", "Suspended"];
+const statusOptions = ["Approved", "Suspended", "Terminated"];
 
 const studentsData = [
   {
@@ -13,7 +12,7 @@ const studentsData = [
     mobile: "+811 847-4958",
     country: "United States",
     address: "742 Evergreen Terrace, Springfield, Illinois, United States",
-    status: "Approved",
+    status: "Suspended",
     image: "https://i.pravatar.cc/150?img=12",
   },
   {
@@ -57,8 +56,6 @@ export default function Students() {
   const [students, setStudents] = useState(studentsData);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
   const [selectedStudents, setSelectedStudents] = useState([]);
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const handleStatusChange = (index, status) => {
     const updated = [...students];
@@ -74,10 +71,10 @@ export default function Students() {
   };
 
   return (
-    <div className="p-4 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold text-gray-800">Approved Students</h1>
+        <h1 className="text-xl font-semibold text-gray-800">Suspened Students</h1>
 
         <div className="relative">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
@@ -111,32 +108,25 @@ export default function Students() {
                 <td className="p-4">{i + 1}</td>
 
                 {/* Student (Image + Name) */}
-                <td className="flex items-center gap-3 py-4">
-  <div
-    onClick={() => navigate(`/students/profile/${s.id}`)}
-    className="flex items-center gap-3 cursor-pointer"
-  >
-    <Avatar name={s.name} image={s.image} />
-    <span className="font-medium text-gray-800 hover:text-indigo-600">
-      {s.name}
-    </span>
-  </div>
-</td>
+                <td className="flex items-center gap-3 py-3">
+                  <Avatar name={s.name} image={s.image} />
+                  <span className="font-medium text-gray-800">{s.name}</span>
+                </td>
 
-                <td className="font-medium p-4">{s.id}</td>
-                <td className="text-gray-500 p-4">{s.email}</td>
-                <td className="text-gray-500 p-4">{s.mobile}</td>
-                <td className="text-gray-500 p-4">{s.country}</td>
+                <td className="font-medium">{s.id}</td>
+                <td className="text-gray-500">{s.email}</td>
+                <td className="text-gray-500">{s.mobile}</td>
+                <td className="text-gray-500">{s.country}</td>
 
                 <td
-                  className="max-w-[220px] truncate text-gray-500 p-4"
+                  className="max-w-[220px] truncate text-gray-500"
                   title={s.address}
                 >
                   {s.address}
                 </td>
 
                 {/* Status Dropdown */}
-                <td className="relative p-4">
+                <td className="relative">
                   <button
                     onClick={() =>
                       setOpenStatusIndex(openStatusIndex === i ? null : i)
