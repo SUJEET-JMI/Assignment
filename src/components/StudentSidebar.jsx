@@ -15,27 +15,23 @@ import {
 } from "lucide-react";
 import { theme } from "../theme.js";
 
-const menu = [
+const studentMenu = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-  { label: "Courses", icon: BookOpen, arrow: true },
-  { label: "Students", icon: Users, path: "/students", arrow: true },
-  { label: "Teachers", icon: Users, arrow: true },
-  { label: "Parents", icon: Users, arrow: true },
-  { label: "Enrolment", icon: ClipboardList, arrow: true },
+  { label: "My Courses", icon: BookOpen, arrow: true },
+  { label: "Profile", icon: User },
   { label: "Messages", icon: MessageSquare },
-  { label: "Admin profile", icon: UserCog },
-  { label: "Invoice", icon: FileText, arrow: true },
   { label: "Settings", icon: Settings }
 ];
 
-export default function Sidebar({ collapsed }) {
+export default function StudentSidebar({ collapsed }) {
+  const location = useLocation();
+
   return (
     <aside
       className={`min-h-screen bg-white border-r flex flex-col transition-all duration-300 ${
         collapsed ? "w-20" : "w-64"
       }`}
     >
-    
 
       {/* Logo */}
       <div
@@ -44,14 +40,14 @@ export default function Sidebar({ collapsed }) {
         }`}
       >
         <div className="w-8 h-8 bg-indigo-600 text-white flex items-center justify-center rounded-lg">
-          C
+          S
         </div>
-        {!collapsed && theme.logo.text}
+        {!collapsed && "Student Portal"}
       </div>
 
       {/* Menu */}
       <nav className="flex-1 px-3 space-y-1">
-        {menu.map((item) => {
+        {studentMenu.map((item) => {
           const Icon = item.icon;
           const isActive = item.path && location.pathname === item.path;
           const Component = item.path ? Link : 'div';
