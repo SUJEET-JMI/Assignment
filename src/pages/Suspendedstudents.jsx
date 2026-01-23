@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, MoreHorizontal, ChevronDown } from "lucide-react";
 import Badge from "../components/Badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { getStudents, updateStudentStatus } from "../services/api";
 
 const SuspendedStudentsData = [
   {
@@ -55,10 +56,12 @@ const Avatar = ({ name, image }) => {
 };
 
 export default function SuspendedStudents() {
-  const [SuspendedStudents, setSuspendedStudents] = useState(SuspendedStudentsData);
+  const [SuspendedStudents, setSuspendedStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
   const [selectedSuspendedStudents, setSelectedSuspendedStudents] = useState([]);
-  const statusOptions = ["Approved", "Suspended", "Terminated"];
+  const statusOptions = ["approved", "suspended", "terminated"];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showExportBar, setShowExportBar] = useState(false);
@@ -66,6 +69,27 @@ export default function SuspendedStudents() {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    fetchSuspendedStudents();
+  }, [startDate, endDate]);
+
+  const fetchSuspendedStudents = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = { status: "suspended" };
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      const response = await getStudents(params);
+      setSuspendedStudents(response.data || []);
+    } catch (err) {
+      setError("Failed to fetch suspended students");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredSuspendedStudents = SuspendedStudents.filter(student =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -100,7 +124,7 @@ const downloadPDF = () => {
 
   // Table rows
   const rows = filteredSuspendedStudents.map((student) => [
-    student.id,
+    student.studentId,
     student.name,
     student.email,
     student.mobile,
@@ -123,11 +147,18 @@ const downloadPDF = () => {
 };
 
 
-  const handleStatusChange = (index, status) => {
-    const updated = [...SuspendedStudents];
-    updated[index].status = status;
-    setSuspendedStudents(updated);
-    setOpenStatusIndex(null);
+  const handleStatusChange = async (index, status) => {
+    const student = SuspendedStudents[index];
+    try {
+      await updateStudentStatus(student.userId, status);
+      const updated = [...SuspendedStudents];
+      updated[index].status = status;
+      setSuspendedStudents(updated);
+      setOpenStatusIndex(null);
+    } catch (err) {
+      console.error("Failed to update status:", err);
+      // Optionally show error to user
+    }
   };
 
   const toggleSelectOne = (id) => {
@@ -220,82 +251,103 @@ const downloadPDF = () => {
             </thead>
 
             <tbody>
-              {filteredSuspendedStudents.map((s, i) => (
+              {loading ? (
                 <tr
-                  key={s.id}
-                  className="border-t hover:bg-gray-50 whitespace-nowrap"
                 >
-                  <td className="px-6 py-5">{i + 1}</td>
-
-                  <td className="px-6 py-5">
-                    <div
-                      onClick={() => navigate(`/Students/profile/${s.id}`)}
-                      className="flex items-center gap-4 cursor-pointer"
-                    >
-                      <Avatar name={s.name} image={s.image} />
-                      <span className="font-medium text-gray-800 hover:text-indigo-600">
-                        {s.name}
-                      </span>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-5 font-medium">{s.id}</td>
-                  <td className="px-6 py-5 text-gray-500">{s.email}</td>
-                  <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
-                  <td className="px-6 py-5 text-gray-500 hidden md:table-cell">{s.country}</td>
-
-                  <td
-                    className="px-6 py-5 max-w-[280px] truncate text-gray-500 hidden md:table-cell"
-                    title={s.address}
-                  >
-                    {s.address}
-                  </td>
-
-                  <td className="relative px-6 py-5">
-                    <button
-                      onClick={() =>
-                        setOpenStatusIndex(openStatusIndex === i ? null : i)
-                      }
-                      className="flex items-center gap-1"
-                    >
-                      <Badge
-                        text={s.status}
-                        type={
-                          s.status === "Approved"
-                            ? "success"
-                            : s.status === "Suspended"
-                              ? "info"
-                              : "danger"
-                        }
-                      />
-                      <ChevronDown className="w-3 h-3 text-gray-400" />
-                    </button>
-
-                    {openStatusIndex === i && (
-                      <div className="absolute z-10 mt-2 w-36 bg-white border rounded-md shadow">
-                        {statusOptions.map((status) => (
-                          <div
-                            key={status}
-                            onClick={() => handleStatusChange(i, status)}
-                            className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
-                          >
-                            {status}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </td>
-
-                  <td className="px-6 py-5">
-                    <input
-                      type="checkbox"
-                      checked={selectedSuspendedStudents.includes(s.id)}
-                      onChange={() => toggleSelectOne(s.id)}
-                      className="w-4 h-4"
-                    />
+                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                    Loading suspended students...
                   </td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td colSpan="9" className="px-6 py-5 text-center text-red-500">
+                    {error}
+                  </td>
+                </tr>
+              ) : filteredSuspendedStudents.length === 0 ? (
+                <tr>
+                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                    No suspended students found
+                  </td>
+                </tr>
+              ) : (
+                filteredSuspendedStudents.map((s, i) => (
+                  <tr
+                    key={s.userId}
+                    className="border-t hover:bg-gray-50 whitespace-nowrap"
+                  >
+                    <td className="px-6 py-5">{i + 1}</td>
+
+                    <td className="px-6 py-5">
+                      <div
+                        onClick={() => navigate(`/Students/profile/${s.userId}`)}
+                        className="flex items-center gap-4 cursor-pointer"
+                      >
+                        <Avatar name={s.name} image={s.profileImage} />
+                        <span className="font-medium text-gray-800 hover:text-indigo-600">
+                          {s.name}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-5 font-medium">{s.studentId}</td>
+                    <td className="px-6 py-5 text-gray-500">{s.email}</td>
+                    <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
+                    <td className="px-6 py-5 text-gray-500 hidden md:table-cell">{s.country}</td>
+
+                    <td
+                      className="px-6 py-5 max-w-[280px] truncate text-gray-500 hidden md:table-cell"
+                      title={s.address}
+                    >
+                      {s.address}
+                    </td>
+
+                    <td className="relative px-6 py-5">
+                      <button
+                        onClick={() =>
+                          setOpenStatusIndex(openStatusIndex === i ? null : i)
+                        }
+                        className="flex items-center gap-1"
+                      >
+                        <Badge
+                          text={s.status}
+                          type={
+                            s.status === "approved"
+                              ? "success"
+                              : s.status === "suspended"
+                                ? "info"
+                                : "danger"
+                          }
+                        />
+                        <ChevronDown className="w-3 h-3 text-gray-400" />
+                      </button>
+
+                      {openStatusIndex === i && (
+                        <div className="absolute z-10 mt-2 w-36 bg-white border rounded-md shadow">
+                          {statusOptions.map((status) => (
+                            <div
+                              key={status}
+                              onClick={() => handleStatusChange(i, status)}
+                              className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
+                            >
+                              {status}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <input
+                        type="checkbox"
+                        checked={selectedSuspendedStudents.includes(s.userId)}
+                        onChange={() => toggleSelectOne(s.userId)}
+                        className="w-4 h-4"
+                      />
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
