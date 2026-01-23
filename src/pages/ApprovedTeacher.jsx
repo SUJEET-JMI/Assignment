@@ -6,7 +6,7 @@ import * as XLSX from 'xlsx';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-const SuspendedStudentsData = [
+const ApprovedTeachersData = [
   {
     id: "STU001",
     name: "Abu Bin Ishtiyak",
@@ -54,10 +54,10 @@ const Avatar = ({ name, image }) => {
   );
 };
 
-export default function SuspendedStudents() {
-  const [SuspendedStudents, setSuspendedStudents] = useState(SuspendedStudentsData);
+export default function ApprovedTeachers() {
+  const [ApprovedTeachers, setApprovedTeachers] = useState(ApprovedTeachersData);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
-  const [selectedSuspendedStudents, setSelectedSuspendedStudents] = useState([]);
+  const [selectedApprovedTeachers, setSelectedApprovedTeachers] = useState([]);
   const statusOptions = ["Approved", "Suspended", "Terminated"];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -67,15 +67,15 @@ export default function SuspendedStudents() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const filteredSuspendedStudents = SuspendedStudents.filter(student =>
+  const filteredApprovedTeachers = ApprovedTeachers.filter(student =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const downloadExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filteredSuspendedStudents);
+    const ws = XLSX.utils.json_to_sheet(filteredApprovedTeachers);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "SuspendedStudents");
-    XLSX.writeFile(wb, "SuspendedStudents.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "ApprovedTeachers");
+    XLSX.writeFile(wb, "ApprovedTeachers.xlsx");
   };
 
   
@@ -85,7 +85,7 @@ const downloadPDF = () => {
 
   // Title
   doc.setFontSize(16);
-  doc.text("SuspendedStudents List", 14, 15);
+  doc.text("ApprovedTeachers List", 14, 15);
 
   // Table columns
   const columns = [
@@ -99,7 +99,7 @@ const downloadPDF = () => {
   ];
 
   // Table rows
-  const rows = filteredSuspendedStudents.map((student) => [
+  const rows = filteredApprovedTeachers.map((student) => [
     student.id,
     student.name,
     student.email,
@@ -119,19 +119,19 @@ const downloadPDF = () => {
   });
 
   // Download PDF
-  doc.save("SuspendedStudents.pdf");
+  doc.save("ApprovedTeachers.pdf");
 };
 
 
   const handleStatusChange = (index, status) => {
-    const updated = [...SuspendedStudents];
+    const updated = [...ApprovedTeachers];
     updated[index].status = status;
-    setSuspendedStudents(updated);
+    setApprovedTeachers(updated);
     setOpenStatusIndex(null);
   };
 
   const toggleSelectOne = (id) => {
-    setSelectedSuspendedStudents((prev) =>
+    setSelectedApprovedTeachers((prev) =>
       prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
     );
   };
@@ -142,7 +142,7 @@ const downloadPDF = () => {
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-semibold text-gray-800">
-            Suspended Students
+            Approved ApprovedTeachers
           </h1>
         </div>
 
@@ -220,7 +220,7 @@ const downloadPDF = () => {
             </thead>
 
             <tbody>
-              {filteredSuspendedStudents.map((s, i) => (
+              {filteredApprovedTeachers.map((s, i) => (
                 <tr
                   key={s.id}
                   className="border-t hover:bg-gray-50 whitespace-nowrap"
@@ -229,7 +229,7 @@ const downloadPDF = () => {
 
                   <td className="px-6 py-5">
                     <div
-                      onClick={() => navigate(`/Students/profile/${s.id}`)}
+                      onClick={() => navigate(`/ApprovedTeachers/profile/${s.id}`)}
                       className="flex items-center gap-4 cursor-pointer"
                     >
                       <Avatar name={s.name} image={s.image} />
@@ -289,7 +289,7 @@ const downloadPDF = () => {
                   <td className="px-6 py-5">
                     <input
                       type="checkbox"
-                      checked={selectedSuspendedStudents.includes(s.id)}
+                      checked={selectedApprovedTeachers.includes(s.id)}
                       onChange={() => toggleSelectOne(s.id)}
                       className="w-4 h-4"
                     />

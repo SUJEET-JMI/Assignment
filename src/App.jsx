@@ -7,6 +7,10 @@ import Students from './pages/Students';
 import SuspendedStudents from './pages/Suspendedstudents';
 import TerminatedStudents from './pages/TerminatedStudents';
 import StudentProfile from './components/StudentProfile';
+import PendingTeacher from './pages/PendingTeacher';
+import ApprovedTeacher from './pages/ApprovedTeacher';
+import SuspendedTeacher from './pages/SuspendedTeachers';
+import TerminatedTeacher from './pages/TerminatedTeacher';
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -23,6 +27,10 @@ export default function App() {
             <Route path="/students/Suspended" element={<SuspendedStudents />} />
             <Route path="/students/terminated" element={<TerminatedStudents />} />
             <Route path="/students/profile/:id" element={<StudentProfile />} />
+            <Route path="/teacher/pending" element={<PendingTeacher />} />
+            <Route path="/teacher" element={<ApprovedTeacher />} />
+            <Route path="/teacher/suspended" element={<SuspendedTeacher />} />
+            <Route path="/teacher/terminated" element={<TerminatedTeacher />} />
             <Route path="/" element={<Dashboard />} /> {/* Default to dashboard */}
           </Routes>
         </div>

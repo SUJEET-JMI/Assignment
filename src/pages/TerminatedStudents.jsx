@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { Search, MoreHorizontal, ChevronDown } from "lucide-react";
 import Badge from "../components/Badge";
+import { useNavigate, useLocation } from "react-router-dom";
+import * as XLSX from 'xlsx';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const studentsData = [
   {
@@ -10,7 +14,7 @@ const studentsData = [
     mobile: "+811 847-4958",
     country: "United States",
     address: "742 Evergreen Terrace, Springfield, Illinois, United States",
-    status: "Suspended",
+    status: "Approved",
     image: "https://i.pravatar.cc/150?img=12",
   },
   {
@@ -54,6 +58,70 @@ export default function Students() {
   const [students, setStudents] = useState(studentsData);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
   const [selectedStudents, setSelectedStudents] = useState([]);
+  const statusOptions = ["Approved", "Suspended", "Terminated"];
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [showExportBar, setShowExportBar] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const filteredStudents = students.filter(student =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const downloadExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(filteredStudents);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Students");
+    XLSX.writeFile(wb, "students.xlsx");
+  };
+
+  
+
+const downloadPDF = () => {
+  const doc = new jsPDF();
+
+  // Title
+  doc.setFontSize(16);
+  doc.text("Students List", 14, 15);
+
+  // Table columns
+  const columns = [
+    "ID",
+    "Name",
+    "Email",
+    "Mobile",
+    "Country",
+    "Address",
+    "Status",
+  ];
+
+  // Table rows
+  const rows = filteredStudents.map((student) => [
+    student.id,
+    student.name,
+    student.email,
+    student.mobile,
+    student.country,
+    student.address,
+    student.status,
+  ]);
+
+  // Generate table
+  autoTable(doc, {
+    head: [columns],
+    body: rows,
+    startY: 25,
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [22, 163, 74] }, // green header
+  });
+
+  // Download PDF
+  doc.save("students.pdf");
+};
+
 
   const handleStatusChange = (index, status) => {
     const updated = [...students];
@@ -69,74 +137,155 @@ export default function Students() {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-4 bg-gray-50 min-h-screen overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold text-gray-800">Terminated Students</h1>
+      <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-semibold text-gray-800">
+            Terminated Students
+          </h1>
+        </div>
 
-        <div className="relative">
+        <div className="relative flex-1 max-w-sm">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
           <input
             placeholder="Search student"
-            className="pl-9 pr-4 py-2 border rounded-md text-sm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 pr-4 py-2 border rounded-md text-sm w-full"
           />
         </div>
       </div>
 
+      {/* Filters and Actions */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col lg:flex-row items-start lg:items-center gap-4 justify-between mb-6">
+        {/* Date Range */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+          <div>
+            <label className="text-xs text-gray-500 block">Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="border rounded-md px-3 py-2 text-sm w-full sm:w-auto"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-500 block">End Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="border rounded-md px-3 py-2 text-sm w-full sm:w-auto"
+            />
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+          <button
+            className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 w-full sm:w-auto"
+            onClick={() => {console.log("Download Excel", startDate, endDate), downloadExcel()}}
+          >
+            Download Excel
+
+          </button>
+
+          <button
+            className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 w-full sm:w-auto"
+            onClick={() => {console.log("Download PDF", startDate, endDate),downloadPDF()}}
+          >
+            Download PDF
+          </button>
+        </div>
+      </div>
+
       {/* Table */}
-      <div className="bg-white rounded-lg border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500 text-left">
-            <tr>
-              <th className="p-4">#</th>
-              <th>Student</th>
-              <th>Student ID</th>
-              <th>Email</th>
-              <th>Mobile</th>
-              <th>Country</th>
-              <th>Address</th>
-              <th>Status</th>
-              <th className="p-4">#</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {students.map((s, i) => (
-              <tr key={i} className="border-t hover:bg-gray-50">
-                <td className="p-4">{i + 1}</td>
-
-                {/* Student (Image + Name) */}
-                <td className="flex items-center gap-3 py-3">
-                  <Avatar name={s.name} image={s.image} />
-                  <span className="font-medium text-gray-800">{s.name}</span>
-                </td>
-
-                <td className="font-medium">{s.id}</td>
-                <td className="text-gray-500">{s.email}</td>
-                <td className="text-gray-500">{s.mobile}</td>
-                <td className="text-gray-500">{s.country}</td>
-
-                <td
-                  className="max-w-[220px] truncate text-gray-500"
-                  title={s.address}
-                >
-                  {s.address}
-                </td>
-
-                {/* Status Dropdown */}
-                <td className="text-gray-500">{s.status}</td>
-                <th className="p-4">
-                  <input
-                    type="checkbox"
-                    checked={selectedStudents.includes(s.id)}
-                    onChange={() => toggleSelectOne(s.id)}
-                    className="w-4 h-4"
-                  />
-                </th>
+      <div className="bg-white rounded-lg border">
+        <div className="overflow-x-auto h-[70vh] overflow-y-auto relative">
+          <table className="min-w-[1200px] text-sm">
+            <thead className="bg-gray-50 text-gray-500 text-left sticky top-0 z-10">
+              <tr className="whitespace-nowrap">
+                <th className="px-6 py-4">S.no</th>
+                <th className="px-6 py-4">Student</th>
+                <th className="px-6 py-4">Student ID</th>
+                <th className="px-6 py-4">Email</th>
+                <th className="px-6 py-4">Mobile</th>
+                <th className="px-6 py-4 hidden md:table-cell">Country</th>
+                <th className="px-6 py-4 hidden md:table-cell">Address</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Approved Check</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {filteredStudents.map((s, i) => (
+                <tr
+                  key={s.id}
+                  className="border-t hover:bg-gray-50 whitespace-nowrap"
+                >
+                  <td className="px-6 py-5">{i + 1}</td>
+
+                  <td className="px-6 py-5">
+                    <div
+                      onClick={() => navigate(`/students/profile/${s.id}`)}
+                      className="flex items-center gap-4 cursor-pointer"
+                    >
+                      <Avatar name={s.name} image={s.image} />
+                      <span className="font-medium text-gray-800 hover:text-indigo-600">
+                        {s.name}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-5 font-medium">{s.id}</td>
+                  <td className="px-6 py-5 text-gray-500">{s.email}</td>
+                  <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
+                  <td className="px-6 py-5 text-gray-500 hidden md:table-cell">{s.country}</td>
+
+                  <td
+                    className="px-6 py-5 max-w-[280px] truncate text-gray-500 hidden md:table-cell"
+                    title={s.address}
+                  >
+                    {s.address}
+                  </td>
+
+                  <td className="relative px-6 py-5 ">
+                    <button
+                      onClick={() =>
+                        setOpenStatusIndex(openStatusIndex === i ? null : i)
+                      }
+                      className="flex items-center gap-1 "
+                    >
+                      <Badge
+                        text={s.status}
+                        type={
+                          s.status === "Approved"
+                            ? "success"
+                            : s.status === "Suspended"
+                              ? "info"
+                              : "danger"
+                        }
+                      />
+                      
+                    </button>
+                   
+                  </td>
+
+                  <td className="px-6 py-5">
+                    <input
+                      type="checkbox"
+                      checked={selectedStudents.includes(s.id)}
+                      onChange={() => toggleSelectOne(s.id)}
+                      className="w-4 h-4"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {/* Pagination */}
         <div className="flex justify-between items-center px-4 py-3 text-xs text-gray-500">
           <div className="flex gap-2">

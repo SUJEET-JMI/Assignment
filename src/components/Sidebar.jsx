@@ -31,7 +31,12 @@ const menu = [
     ]
   },
 
-  { label: "Teachers", icon: Users },
+  { label: "Teachers", icon: Users ,submenu: [
+      { label: "Approved Teachers", path: "/teacher" },
+      { label: "Pending Teachers", path: "/teacher/pending" },
+      { label: "Suspended Teachers", path: "/teacher/suspended" },
+      { label: "Terminated Teachers", path: "/teacher/terminated" }
+    ]},
   { label: "Parents", icon: Users },
   { label: "Enrolment", icon: ClipboardList },
   { label: "Messages", icon: MessageSquare },
