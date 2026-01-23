@@ -15,7 +15,7 @@ export default function App() {
     <Router>
       <div className="flex">
         <Sidebar collapsed={collapsed} />
-        <div className="flex-1">
+        <div className="flex-1 overflow-hidden">
           <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />

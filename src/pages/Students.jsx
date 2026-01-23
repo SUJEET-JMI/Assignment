@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Search, MoreHorizontal, ChevronDown } from "lucide-react";
 import Badge from "../components/Badge";
-import { useNavigate,useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
-const statusOptions = ["Approved", "Suspended", "Suspended"];
+
 
 const studentsData = [
   {
@@ -57,6 +57,11 @@ export default function Students() {
   const [students, setStudents] = useState(studentsData);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
   const [selectedStudents, setSelectedStudents] = useState([]);
+  const statusOptions = ["Approved", "Suspended", "Terminated"];
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [showExportBar, setShowExportBar] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -74,10 +79,14 @@ export default function Students() {
   };
 
   return (
-    <div className="p-4 bg-gray-50 min-h-screen">
+    <div className="p-4 bg-gray-50 h-screen overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold text-gray-800">Approved Students</h1>
+      <div className="items-center justify-between mb-6">
+      <div className=" items-center gap-3">
+        <h1 className="text-xl font-semibold text-gray-800">
+          Approved Students
+        </h1>
+        </div>
 
         <div className="relative">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
@@ -86,102 +95,157 @@ export default function Students() {
             className="pl-9 pr-4 py-2 border rounded-md text-sm"
           />
         </div>
+        
+  
+    <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center gap-4 justify-between">
+      
+      {/* Date Range */}
+      <div className="flex items-center gap-3">
+        <div>
+          <label className="text-xs text-gray-500 block">Start Date</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border rounded-md px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-500 block">End Date</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border rounded-md px-3 py-2 text-sm"
+          />
+        </div>
       </div>
 
+      {/* Action Buttons */}
+      <div className="flex items-center gap-3">
+        <button
+          className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+          onClick={() => console.log("Download Excel", startDate, endDate)}
+        >
+          Download Excel
+        </button>
+
+        <button
+          className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+          onClick={() => console.log("Download PDF", startDate, endDate)}
+        >
+          Download PDF
+        </button>
+      </div>
+    </div>
+  
+
+
+      </div>
+      
+
       {/* Table */}
-      <div className="bg-white rounded-lg border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500 text-left">
-            <tr>
-              <th className="p-4">#</th>
-              <th>Student</th>
-              <th>Student ID</th>
-              <th>Email</th>
-              <th>Mobile</th>
-              <th>Country</th>
-              <th>Address</th>
-              <th>Status</th>
-              <th className="p-4">#</th>
-            </tr>
-          </thead>
+      <div className="bg-white rounded-lg border">
+  <div className="overflow-x-auto h-[70vh] overflow-y-auto relative">
 
-          <tbody>
-            {students.map((s, i) => (
-              <tr key={i} className="border-t hover:bg-gray-50">
-                <td className="p-4">{i + 1}</td>
+          <table className="min-w-[1200px] text-sm">
+            <thead className="bg-gray-50 text-gray-500 text-left sticky top-0 z-10">
 
-                {/* Student (Image + Name) */}
-                <td className="flex items-center gap-3 py-4">
-  <div
-    onClick={() => navigate(`/students/profile/${s.id}`)}
-    className="flex items-center gap-3 cursor-pointer"
-  >
-    <Avatar name={s.name} image={s.image} />
-    <span className="font-medium text-gray-800 hover:text-indigo-600">
-      {s.name}
-    </span>
-  </div>
-</td>
-
-                <td className="font-medium p-4">{s.id}</td>
-                <td className="text-gray-500 p-4">{s.email}</td>
-                <td className="text-gray-500 p-4">{s.mobile}</td>
-                <td className="text-gray-500 p-4">{s.country}</td>
-
-                <td
-                  className="max-w-[220px] truncate text-gray-500 p-4"
-                  title={s.address}
-                >
-                  {s.address}
-                </td>
-
-                {/* Status Dropdown */}
-                <td className="relative p-4">
-                  <button
-                    onClick={() =>
-                      setOpenStatusIndex(openStatusIndex === i ? null : i)
-                    }
-                    className="flex items-center gap-1"
-                  >
-                    <Badge
-                      text={s.status}
-                      type={
-                        s.status === "Approved"
-                          ? "success"
-                          : s.status === "Suspended"
-                            ? "info"
-                            : "danger"
-                      }
-                    />
-                    <ChevronDown className="w-3 h-3 text-gray-400" />
-                  </button>
-
-                  {openStatusIndex === i && (
-                    <div className="absolute z-10 mt-2 w-36 bg-white border rounded-md shadow">
-                      {statusOptions.map((status) => (
-                        <div
-                          key={status}
-                          onClick={() => handleStatusChange(i, status)}
-                          className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
-                        >
-                          {status}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </td>
-                <th className="p-4">
-                  <input
-                    type="checkbox"
-                    checked={selectedStudents.includes(s.id)}
-                    onChange={() => toggleSelectOne(s.id)}
-                    className="w-4 h-4"
-                  />
-                </th>
+              <tr className="whitespace-nowrap">
+                <th className="px-6 py-4">S.no</th>
+                <th className="px-6 py-4">Student</th>
+                <th className="px-6 py-4">Student ID</th>
+                <th className="px-6 py-4">Email</th>
+                <th className="px-6 py-4">Mobile</th>
+                <th className="px-6 py-4">Country</th>
+                <th className="px-6 py-4">Address</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Approved Check</th>
               </tr>
+            </thead>
+
+            <tbody>
+  {students.map((s, i) => (
+    <tr
+      key={s.id}
+      className="border-t hover:bg-gray-50 whitespace-nowrap"
+    >
+      <td className="px-6 py-5">{i + 1}</td>
+
+      <td className="px-6 py-5">
+        <div
+          onClick={() => navigate(`/students/profile/${s.id}`)}
+          className="flex items-center gap-4 cursor-pointer"
+        >
+          <Avatar name={s.name} image={s.image} />
+          <span className="font-medium text-gray-800 hover:text-indigo-600">
+            {s.name}
+          </span>
+        </div>
+      </td>
+
+      <td className="px-6 py-5 font-medium">{s.id}</td>
+      <td className="px-6 py-5 text-gray-500">{s.email}</td>
+      <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
+      <td className="px-6 py-5 text-gray-500">{s.country}</td>
+
+      <td
+        className="px-6 py-5 max-w-[280px] truncate text-gray-500"
+        title={s.address}
+      >
+        {s.address}
+      </td>
+
+      <td className="relative px-6 py-5">
+        <button
+          onClick={() =>
+            setOpenStatusIndex(openStatusIndex === i ? null : i)
+          }
+          className="flex items-center gap-1"
+        >
+          <Badge
+            text={s.status}
+            type={
+              s.status === "Approved"
+                ? "success"
+                : s.status === "Suspended"
+                ? "info"
+                : "danger"
+            }
+          />
+          <ChevronDown className="w-3 h-3 text-gray-400" />
+        </button>
+
+        {openStatusIndex === i && (
+          <div className="absolute z-10 mt-2 w-36 bg-white border rounded-md shadow">
+            {statusOptions.map((status) => (
+              <div
+                key={status}
+                onClick={() => handleStatusChange(i, status)}
+                className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
+              >
+                {status}
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        )}
+      </td>
+
+      <td className="px-6 py-5">
+        <input
+          type="checkbox"
+          checked={selectedStudents.includes(s.id)}
+          onChange={() => toggleSelectOne(s.id)}
+          className="w-4 h-4"
+        />
+      </td>
+    </tr>
+  ))}
+</tbody>
+
+          </table>
+        </div>
         {/* Pagination */}
         <div className="flex justify-between items-center px-4 py-3 text-xs text-gray-500">
           <div className="flex gap-2">
