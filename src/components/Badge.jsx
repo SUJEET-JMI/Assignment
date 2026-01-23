@@ -6,7 +6,7 @@ function Badge({ text, type }) {
   };
 
   return (
-    <span className={`text-xl font-bold ${styles[type]}`}>
+    <span className={`text-md font-bold ${styles[type]}`}>
       • {text}
     </span>
   );

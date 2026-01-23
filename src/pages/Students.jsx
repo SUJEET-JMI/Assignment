@@ -28,7 +28,7 @@ export default function Students() {
   const [loading, setLoading] = useState(true);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
   const [selectedStudents, setSelectedStudents] = useState([]);
-  const statusOptions = ["approved", "suspended", "terminated"];
+  const statusOptions = ["APPROVED", "SUSPENDED", "TERMINATED"];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showExportBar, setShowExportBar] = useState(false);
@@ -41,7 +41,7 @@ export default function Students() {
     const fetchStudents = async () => {
       setLoading(true);
       try {
-        const params = { status: "approved" };
+        const params = { status: "APPROVED" };
         if (startDate) params.startDate = startDate;
         if (endDate) params.endDate = endDate;
         const response = await getStudents(params);
@@ -273,14 +273,14 @@ const downloadPDF = () => {
                       <Badge
                         text={s.status}
                         type={
-                          s.status === "approved"
+                          s.status === "APPROVED"
                             ? "success"
-                            : s.status === "suspended"
-                              ? "info"
+                            : s.status === "SUSPENDED"
+                              ? "warning"
                               : "danger"
                         }
                       />
-                      <ChevronDown className="w-3 h-3 text-gray-400" />
+                      <ChevronDown className="w-3 h-3 text-green-400" />
                     </button>
 
                     {openStatusIndex === i && (

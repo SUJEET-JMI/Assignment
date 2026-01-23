@@ -7,38 +7,6 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getStudents, updateStudentStatus } from "../services/api";
 
-const SuspendedStudentsData = [
-  {
-    id: "STU001",
-    name: "Abu Bin Ishtiyak",
-    email: "abu@gmail.com",
-    mobile: "+811 847-4958",
-    country: "United States",
-    address: "742 Evergreen Terrace, Springfield, Illinois, United States",
-    status: "Approved",
-    image: "https://i.pravatar.cc/150?img=12",
-  },
-  {
-    id: "STU002",
-    name: "Ashley Lawson",
-    email: "ashley@gmail.com",
-    mobile: "+124 394-1787",
-    country: "United Kingdom",
-    address: "221B Baker Street, London, United Kingdom",
-    status: "Suspended",
-    image: "https://i.pravatar.cc/150?img=47",
-  },
-  {
-    id: "STU003",
-    name: "Joe Larson",
-    email: "joe@gmail.com",
-    mobile: "+168 603-2320",
-    country: "India",
-    address: "Near MG Road Metro Station, Bengaluru, Karnataka, India",
-    status: "Suspended",
-    image: "",
-  },
-];
 const Avatar = ({ name, image }) => {
   const initials = name
     .split(" ")
@@ -61,7 +29,7 @@ export default function SuspendedStudents() {
   const [error, setError] = useState(null);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
   const [selectedSuspendedStudents, setSelectedSuspendedStudents] = useState([]);
-  const statusOptions = ["approved", "suspended", "terminated"];
+  const statusOptions = ["APPROVED", "SUSPENDED", "TERMINATED"];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showExportBar, setShowExportBar] = useState(false);
@@ -78,7 +46,7 @@ export default function SuspendedStudents() {
     setLoading(true);
     setError(null);
     try {
-      const params = { status: "suspended" };
+      const params = { status: "SUSPENDED" };
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate;
       const response = await getStudents(params);
@@ -312,14 +280,14 @@ const downloadPDF = () => {
                         <Badge
                           text={s.status}
                           type={
-                            s.status === "approved"
+                            s.status === "APPROVED"
                               ? "success"
-                              : s.status === "suspended"
-                                ? "info"
+                              : s.status === "SUSPENDED"
+                                ? "warning"
                                 : "danger"
                           }
                         />
-                        <ChevronDown className="w-3 h-3 text-gray-400" />
+                        <ChevronDown className="w-3 h-3 text-yellow-400" />
                       </button>
 
                       {openStatusIndex === i && (

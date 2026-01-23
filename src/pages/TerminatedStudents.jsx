@@ -28,7 +28,7 @@ export default function Students() {
   const [error, setError] = useState(null);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
   const [selectedStudents, setSelectedStudents] = useState([]);
-  const statusOptions = ["approved", "suspended", "terminated"];
+  const statusOptions = ["APPROVED", "SUSPENDED", "TERMINATED"];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showExportBar, setShowExportBar] = useState(false);
@@ -45,7 +45,7 @@ export default function Students() {
     setLoading(true);
     setError(null);
     try {
-      const params = { status: "terminated" };
+      const params = { status: "TERMINATED" };
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate;
       const response = await getStudents(params);
@@ -271,14 +271,14 @@ const downloadPDF = () => {
                       onClick={() =>
                         setOpenStatusIndex(openStatusIndex === i ? null : i)
                       }
-                      className="flex items-center gap-1 text-lg"
+                      className="flex items-center gap-1"
                     >
                       <Badge
                         text={s.status}
                         type={
-                          s.status === "Approved"
+                          s.status === "APPROVED"
                             ? "success"
-                            : s.status === "Suspended"
+                            : s.status === "SUSPENDED"
                               ? "warning"
                               : "danger"
                         }

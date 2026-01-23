@@ -1,43 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, MoreHorizontal, ChevronDown } from "lucide-react";
 import Badge from "../components/Badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { getStudents, updateStudentStatus } from "../services/api";
 
-const ApprovedTeachersData = [
-  {
-    id: "STU001",
-    name: "Abu Bin Ishtiyak",
-    email: "abu@gmail.com",
-    mobile: "+811 847-4958",
-    country: "United States",
-    address: "742 Evergreen Terrace, Springfield, Illinois, United States",
-    status: "Approved",
-    image: "https://i.pravatar.cc/150?img=12",
-  },
-  {
-    id: "STU002",
-    name: "Ashley Lawson",
-    email: "ashley@gmail.com",
-    mobile: "+124 394-1787",
-    country: "United Kingdom",
-    address: "221B Baker Street, London, United Kingdom",
-    status: "Suspended",
-    image: "https://i.pravatar.cc/150?img=47",
-  },
-  {
-    id: "STU003",
-    name: "Joe Larson",
-    email: "joe@gmail.com",
-    mobile: "+168 603-2320",
-    country: "India",
-    address: "Near MG Road Metro Station, Bengaluru, Karnataka, India",
-    status: "Suspended",
-    image: "",
-  },
-];
 const Avatar = ({ name, image }) => {
   const initials = name
     .split(" ")
@@ -54,11 +23,12 @@ const Avatar = ({ name, image }) => {
   );
 };
 
-export default function ApprovedTeachers() {
-  const [ApprovedTeachers, setApprovedTeachers] = useState(ApprovedTeachersData);
+export default function Students() {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
-  const [selectedApprovedTeachers, setSelectedApprovedTeachers] = useState([]);
-  const statusOptions = ["Approved", "Suspended", "Terminated"];
+  const [selectedStudents, setSelectedStudents] = useState([]);
+  const statusOptions = ["APPROVED", "SUSPENDED", "TERMINATED"];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showExportBar, setShowExportBar] = useState(false);
@@ -67,15 +37,35 @@ export default function ApprovedTeachers() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const filteredApprovedTeachers = ApprovedTeachers.filter(student =>
+  useEffect(() => {
+    const fetchStudents = async () => {
+      setLoading(true);
+      try {
+        const params = { status: "APPROVED" };
+        if (startDate) params.startDate = startDate;
+        if (endDate) params.endDate = endDate;
+        const response = await getStudents(params);
+        setStudents(response.data || []);
+      } catch (err) {
+        console.error("Failed to fetch students:", err);
+        setStudents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, [startDate, endDate]);
+
+  const filteredStudents = students.filter(student =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const downloadExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filteredApprovedTeachers);
+    const ws = XLSX.utils.json_to_sheet(filteredStudents);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "ApprovedTeachers");
-    XLSX.writeFile(wb, "ApprovedTeachers.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Students");
+    XLSX.writeFile(wb, "students.xlsx");
   };
 
   
@@ -85,7 +75,7 @@ const downloadPDF = () => {
 
   // Title
   doc.setFontSize(16);
-  doc.text("ApprovedTeachers List", 14, 15);
+  doc.text("Students List", 14, 15);
 
   // Table columns
   const columns = [
@@ -99,8 +89,8 @@ const downloadPDF = () => {
   ];
 
   // Table rows
-  const rows = filteredApprovedTeachers.map((student) => [
-    student.id,
+  const rows = filteredStudents.map((student) => [
+    student.studentId,
     student.name,
     student.email,
     student.mobile,
@@ -119,19 +109,28 @@ const downloadPDF = () => {
   });
 
   // Download PDF
-  doc.save("ApprovedTeachers.pdf");
+  doc.save("students.pdf");
 };
 
 
-  const handleStatusChange = (index, status) => {
-    const updated = [...ApprovedTeachers];
-    updated[index].status = status;
-    setApprovedTeachers(updated);
-    setOpenStatusIndex(null);
+  const handleStatusChange = async (index, status) => {
+    const student = filteredStudents[index];
+    try {
+      await updateStudentStatus(student.userId, status);
+      // Update local state
+      const updated = students.map(s =>
+        s.userId === student.userId ? { ...s, status: status } : s
+      );
+      setStudents(updated);
+      setOpenStatusIndex(null);
+    } catch (err) {
+      console.error("Failed to update status:", err);
+      // Optionally show error to user
+    }
   };
 
   const toggleSelectOne = (id) => {
-    setSelectedApprovedTeachers((prev) =>
+    setSelectedStudents((prev) =>
       prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
     );
   };
@@ -142,7 +141,7 @@ const downloadPDF = () => {
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-semibold text-gray-800">
-            Approved ApprovedTeachers
+            Approved Students
           </h1>
         </div>
 
@@ -220,26 +219,39 @@ const downloadPDF = () => {
             </thead>
 
             <tbody>
-              {filteredApprovedTeachers.map((s, i) => (
+              {loading ? (
+                <tr>
+                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                    Loading students...
+                  </td>
+                </tr>
+              ) : filteredStudents.length === 0 ? (
+                <tr>
+                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                    No approved students found.
+                  </td>
+                </tr>
+              ) : (
+                filteredStudents.map((s, i) => (
                 <tr
-                  key={s.id}
+                  key={s.userId}
                   className="border-t hover:bg-gray-50 whitespace-nowrap"
                 >
                   <td className="px-6 py-5">{i + 1}</td>
 
                   <td className="px-6 py-5">
                     <div
-                      onClick={() => navigate(`/ApprovedTeachers/profile/${s.id}`)}
+                      onClick={() => navigate(`/students/profile/${s.userId}`)}
                       className="flex items-center gap-4 cursor-pointer"
                     >
-                      <Avatar name={s.name} image={s.image} />
+                      <Avatar name={s.name} image={s.profileImage} />
                       <span className="font-medium text-gray-800 hover:text-indigo-600">
                         {s.name}
                       </span>
                     </div>
                   </td>
 
-                  <td className="px-6 py-5 font-medium">{s.id}</td>
+                  <td className="px-6 py-5 font-medium">{s.studentId}</td>
                   <td className="px-6 py-5 text-gray-500">{s.email}</td>
                   <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
                   <td className="px-6 py-5 text-gray-500 hidden md:table-cell">{s.country}</td>
@@ -261,14 +273,14 @@ const downloadPDF = () => {
                       <Badge
                         text={s.status}
                         type={
-                          s.status === "Approved"
+                          s.status === "APPROVED"
                             ? "success"
-                            : s.status === "Suspended"
-                              ? "info"
+                            : s.status === "SUSPENDED"
+                              ? "warning"
                               : "danger"
                         }
                       />
-                      <ChevronDown className="w-3 h-3 text-gray-400" />
+                      <ChevronDown className="w-3 h-3 text-green-400" />
                     </button>
 
                     {openStatusIndex === i && (
@@ -289,13 +301,14 @@ const downloadPDF = () => {
                   <td className="px-6 py-5">
                     <input
                       type="checkbox"
-                      checked={selectedApprovedTeachers.includes(s.id)}
+                      checked={selectedStudents.includes(s.id)}
                       onChange={() => toggleSelectOne(s.id)}
                       className="w-4 h-4"
                     />
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>
