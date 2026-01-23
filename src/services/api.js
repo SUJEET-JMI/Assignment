@@ -1,4 +1,4 @@
-const BASE_URL = "https://classplus-iwn1.onrender.com/api"; // Adjust if backend runs on different port
+const BASE_URL = "https://localhost:5000/api"; // Adjust if backend runs on different port
 
 const json = async (response) => {
   if (!response.ok) {

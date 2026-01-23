@@ -28,7 +28,7 @@ export default function Students() {
   const [loading, setLoading] = useState(true);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
   const [selectedStudents, setSelectedStudents] = useState([]);
-  const statusOptions = ["Approved", "Suspended", "Terminated"];
+  const statusOptions = ["approved", "suspended", "terminated"];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showExportBar, setShowExportBar] = useState(false);
@@ -90,7 +90,7 @@ const downloadPDF = () => {
 
   // Table rows
   const rows = filteredStudents.map((student) => [
-    student.id,
+    student.studentId,
     student.name,
     student.email,
     student.mobile,
@@ -116,10 +116,10 @@ const downloadPDF = () => {
   const handleStatusChange = async (index, status) => {
     const student = filteredStudents[index];
     try {
-      await updateStudentStatus(student.id, status.toLowerCase());
+      await updateStudentStatus(student.userId, status);
       // Update local state
       const updated = students.map(s =>
-        s.id === student.id ? { ...s, status: status.toLowerCase() } : s
+        s.userId === student.userId ? { ...s, status: status } : s
       );
       setStudents(updated);
       setOpenStatusIndex(null);
@@ -234,24 +234,24 @@ const downloadPDF = () => {
               ) : (
                 filteredStudents.map((s, i) => (
                 <tr
-                  key={s.id}
+                  key={s.userId}
                   className="border-t hover:bg-gray-50 whitespace-nowrap"
                 >
                   <td className="px-6 py-5">{i + 1}</td>
 
                   <td className="px-6 py-5">
                     <div
-                      onClick={() => navigate(`/students/profile/${s.id}`)}
+                      onClick={() => navigate(`/students/profile/${s.userId}`)}
                       className="flex items-center gap-4 cursor-pointer"
                     >
-                      <Avatar name={s.name} image={s.image} />
+                      <Avatar name={s.name} image={s.profileImage} />
                       <span className="font-medium text-gray-800 hover:text-indigo-600">
                         {s.name}
                       </span>
                     </div>
                   </td>
 
-                  <td className="px-6 py-5 font-medium">{s.id}</td>
+                  <td className="px-6 py-5 font-medium">{s.studentId}</td>
                   <td className="px-6 py-5 text-gray-500">{s.email}</td>
                   <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
                   <td className="px-6 py-5 text-gray-500 hidden md:table-cell">{s.country}</td>
@@ -273,9 +273,9 @@ const downloadPDF = () => {
                       <Badge
                         text={s.status}
                         type={
-                          s.status === "Approved"
+                          s.status === "approved"
                             ? "success"
-                            : s.status === "Suspended"
+                            : s.status === "suspended"
                               ? "info"
                               : "danger"
                         }

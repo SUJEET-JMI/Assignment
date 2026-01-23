@@ -1,43 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, MoreHorizontal, ChevronDown } from "lucide-react";
 import Badge from "../components/Badge";
 import { useNavigate, useLocation } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-
-const studentsData = [
-  {
-    id: "STU001",
-    name: "Abu Bin Ishtiyak",
-    email: "abu@gmail.com",
-    mobile: "+811 847-4958",
-    country: "United States",
-    address: "742 Evergreen Terrace, Springfield, Illinois, United States",
-    status: "Approved",
-    image: "https://i.pravatar.cc/150?img=12",
-  },
-  {
-    id: "STU002",
-    name: "Ashley Lawson",
-    email: "ashley@gmail.com",
-    mobile: "+124 394-1787",
-    country: "United Kingdom",
-    address: "221B Baker Street, London, United Kingdom",
-    status: "Suspended",
-    image: "https://i.pravatar.cc/150?img=47",
-  },
-  {
-    id: "STU003",
-    name: "Joe Larson",
-    email: "joe@gmail.com",
-    mobile: "+168 603-2320",
-    country: "India",
-    address: "Near MG Road Metro Station, Bengaluru, Karnataka, India",
-    status: "Suspended",
-    image: "",
-  },
-];
+import { getStudents, updateStudentStatus } from "../services/api";
 const Avatar = ({ name, image }) => {
   const initials = name
     .split(" ")
@@ -55,10 +23,12 @@ const Avatar = ({ name, image }) => {
 };
 
 export default function Students() {
-  const [students, setStudents] = useState(studentsData);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
   const [selectedStudents, setSelectedStudents] = useState([]);
-  const statusOptions = ["Approved", "Suspended", "Terminated"];
+  const statusOptions = ["approved", "suspended", "terminated"];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showExportBar, setShowExportBar] = useState(false);
@@ -66,6 +36,27 @@ export default function Students() {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    fetchTerminatedStudents();
+  }, [startDate, endDate]);
+
+  const fetchTerminatedStudents = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = { status: "terminated" };
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      const response = await getStudents(params);
+      setStudents(response.data || []);
+    } catch (err) {
+      setError("Failed to fetch terminated students");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredStudents = students.filter(student =>
     student.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -100,7 +91,7 @@ const downloadPDF = () => {
 
   // Table rows
   const rows = filteredStudents.map((student) => [
-    student.id,
+    student.studentId,
     student.name,
     student.email,
     student.mobile,
@@ -123,11 +114,19 @@ const downloadPDF = () => {
 };
 
 
-  const handleStatusChange = (index, status) => {
-    const updated = [...students];
-    updated[index].status = status;
-    setStudents(updated);
-    setOpenStatusIndex(null);
+  const handleStatusChange = async (index, status) => {
+    const student = students[index];
+    try {
+      await updateStudentStatus(student.userId, status);
+      const updated = students.map(s =>
+        s.userId === student.userId ? { ...s, status: status } : s
+      );
+      setStudents(updated);
+      setOpenStatusIndex(null);
+    } catch (err) {
+      console.error("Failed to update status:", err);
+      // Optionally show error to user
+    }
   };
 
   const toggleSelectOne = (id) => {
@@ -135,6 +134,22 @@ const downloadPDF = () => {
       prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
     );
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-500 p-4">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen overflow-hidden">
@@ -225,7 +240,7 @@ const downloadPDF = () => {
                   key={s.id}
                   className="border-t hover:bg-gray-50 whitespace-nowrap"
                 >
-                  <td className="px-6 py-5">{i + 1}</td>
+                  <td className="px-6 py-5 font-bold text-sm">{i + 1}</td>
 
                   <td className="px-6 py-5">
                     <div
@@ -233,19 +248,19 @@ const downloadPDF = () => {
                       className="flex items-center gap-4 cursor-pointer"
                     >
                       <Avatar name={s.name} image={s.image} />
-                      <span className="font-medium text-gray-800 hover:text-indigo-600">
+                      <span className="font-bold text-sm text-gray-800 hover:text-indigo-600">
                         {s.name}
                       </span>
                     </div>
                   </td>
 
-                  <td className="px-6 py-5 font-medium">{s.id}</td>
-                  <td className="px-6 py-5 text-gray-500">{s.email}</td>
-                  <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
-                  <td className="px-6 py-5 text-gray-500 hidden md:table-cell">{s.country}</td>
+                  <td className="px-6 py-5 font-bold text-sm">{s.studentId}</td>
+                  <td className="px-6 py-5 font-bold text-sm text-gray-500">{s.email}</td>
+                  <td className="px-6 py-5 font-bold text-sm text-gray-500">{s.mobile}</td>
+                  <td className="px-6 py-5 font-bold text-sm text-gray-500 hidden md:table-cell">{s.country}</td>
 
                   <td
-                    className="px-6 py-5 max-w-[280px] truncate text-gray-500 hidden md:table-cell"
+                    className="px-6 py-5 max-w-[280px] truncate font-bold text-sm text-gray-500 hidden md:table-cell"
                     title={s.address}
                   >
                     {s.address}
@@ -256,7 +271,7 @@ const downloadPDF = () => {
                       onClick={() =>
                         setOpenStatusIndex(openStatusIndex === i ? null : i)
                       }
-                      className="flex items-center gap-1 "
+                      className="flex items-center gap-1 text-lg"
                     >
                       <Badge
                         text={s.status}
@@ -264,13 +279,13 @@ const downloadPDF = () => {
                           s.status === "Approved"
                             ? "success"
                             : s.status === "Suspended"
-                              ? "info"
+                              ? "warning"
                               : "danger"
                         }
                       />
-                      
+
                     </button>
-                   
+
                   </td>
 
                   <td className="px-6 py-5">
