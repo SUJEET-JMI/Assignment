@@ -19,7 +19,13 @@ import { theme } from "../theme.js";
 const menu = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
 
-  { label: "Courses", icon: BookOpen },
+  { label: "Courses", icon: BookOpen ,
+    submenu: [
+      { label: "Class", path: "/Class" },
+      { label: "Subject", path: "/Subject" },
+      { label: "Courses", path: "/Courses" }
+    ]
+  },
 
   {
     label: "Students",
