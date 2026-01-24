@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Search, MoreHorizontal, ChevronDown } from "lucide-react";
 import Badge from "../components/Badge";
 import { useNavigate, useLocation } from "react-router-dom";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getTeachers, updateTeacherStatus } from "../services/api";
@@ -63,8 +63,8 @@ export default function PendingTeacher() {
     fetchteachers();
   }, [startDate, endDate]);
 
-  const filteredteachers = teachers.filter(teachers =>
-    teachers.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredteachers = teachers.filter((teachers) =>
+    teachers.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const downloadExcel = () => {
@@ -74,59 +74,56 @@ export default function PendingTeacher() {
     XLSX.writeFile(wb, "teachers.xlsx");
   };
 
-  
+  const downloadPDF = () => {
+    const doc = new jsPDF();
 
-const downloadPDF = () => {
-  const doc = new jsPDF();
+    // Title
+    doc.setFontSize(16);
+    doc.text("teachers List", 14, 15);
 
-  // Title
-  doc.setFontSize(16);
-  doc.text("teachers List", 14, 15);
+    // Table columns
+    const columns = [
+      "ID",
+      "Name",
+      "Email",
+      "Mobile",
+      "Country",
+      "Address",
+      "Status",
+    ];
 
-  // Table columns
-  const columns = [
-    "ID",
-    "Name",
-    "Email",
-    "Mobile",
-    "Country",
-    "Address",
-    "Status",
-  ];
+    // Table rows
+    const rows = filteredteachers.map((teachers) => [
+      teachers.teacherId,
+      teachers.name,
+      teachers.email,
+      teachers.mobile,
+      teachers.country,
+      teachers.address,
+      teachers.status,
+    ]);
 
-  // Table rows
-  const rows = filteredteachers.map((teachers) => [
-    teachers.teachersId,
-    teachers.name,
-    teachers.email,
-    teachers.mobile,
-    teachers.country,
-    teachers.address,
-    teachers.status,
-  ]);
+    // Generate table
+    autoTable(doc, {
+      head: [columns],
+      body: rows,
+      startY: 25,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [22, 163, 74] }, // green header
+    });
 
-  // Generate table
-  autoTable(doc, {
-    head: [columns],
-    body: rows,
-    startY: 25,
-    styles: { fontSize: 9 },
-    headStyles: { fillColor: [22, 163, 74] }, // green header
-  });
-
-  // Download PDF
-  doc.save("teachers.pdf");
-};
-
+    // Download PDF
+    doc.save("teachers.pdf");
+  };
 
   const handleStatusChange = async (index, status) => {
-    const teachers = filteredteachers[index];
-    try {
-      await updateTeacherStatus(teachers.userId, status);
-      // Update local state
-      const updated = teachers.map(s =>
-        s.userId === teachers.userId ? { ...s, status: status } : s
-      );
+    const teacher = filteredteachers[index];
+        try {
+          await updateTeacherStatus(teacher.userId, status);
+          // Update local state
+          const updated = teachers.map(s =>
+            s.userId === teacher.userId ? { ...s, status: status } : s
+          );
       setteachers(updated);
       setOpenStatusIndex(null);
     } catch (err) {
@@ -191,15 +188,19 @@ const downloadPDF = () => {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
           <button
             className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 w-full sm:w-auto"
-            onClick={() => {console.log("Download Excel", startDate, endDate), downloadExcel()}}
+            onClick={() => {
+              (console.log("Download Excel", startDate, endDate),
+                downloadExcel());
+            }}
           >
             Download Excel
-
           </button>
 
           <button
             className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 w-full sm:w-auto"
-            onClick={() => {console.log("Download PDF", startDate, endDate),downloadPDF()}}
+            onClick={() => {
+              (console.log("Download PDF", startDate, endDate), downloadPDF());
+            }}
           >
             Download PDF
           </button>
@@ -227,90 +228,97 @@ const downloadPDF = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                  <td
+                    colSpan="9"
+                    className="px-6 py-5 text-center text-gray-500"
+                  >
                     Loading teachers...
                   </td>
                 </tr>
               ) : filteredteachers.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                  <td
+                    colSpan="9"
+                    className="px-6 py-5 text-center text-gray-500"
+                  >
                     No Pending teachers found.
                   </td>
                 </tr>
               ) : (
                 filteredteachers.map((s, i) => (
-                <tr
-                  key={s.userId}
-                  className="border-t hover:bg-gray-50 whitespace-nowrap"
-                >
-                  <td className="px-6 py-5">{i + 1}</td>
-
-                  <td className="px-6 py-5">
-                    <div
-                      onClick={() => navigate(`/teachers/profile/${s.userId}`)}
-                      className="flex items-center gap-4 cursor-pointer"
-                    >
-                      <Avatar name={s.name} image={s.profileImage} />
-                      <span className="font-medium text-gray-800 hover:text-indigo-600">
-                        {s.name}
-                      </span>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-5 font-medium">{s.teachersId}</td>
-                  <td className="px-6 py-5 text-gray-500">{s.email}</td>
-                  <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
-                  <td className="px-6 py-5 text-gray-500 hidden md:table-cell">{s.country}</td>
-
-                  <td
-                    className="px-6 py-5 max-w-[280px] truncate text-gray-500 hidden md:table-cell"
-                    title={s.address}
+                  <tr
+                    key={s.userId}
+                    className="border-t hover:bg-gray-50 whitespace-nowrap"
                   >
-                    {s.address}
-                  </td>
+                    <td className="px-6 py-5">{i + 1}</td>
 
-                  <td className="relative px-6 py-5">
-                    <button
-                      onClick={() =>
-                        setOpenStatusIndex(openStatusIndex === i ? null : i)
-                      }
-                      className="flex items-center gap-1"
-                    >
-                      
-
-<Badge
-  text={s.status}
-  type={statusTypeMap[s.status] || "default"}
-/>
-
-<ChevronDown className="w-3 h-3 text-green-400" />
-
-                    </button>
-
-                    {openStatusIndex === i && (
-                      <div className="absolute z-10 mt-2 w-36 bg-white border rounded-md shadow">
-                        {statusOptions.map((status) => (
-                          <div
-                            key={status}
-                            onClick={() => handleStatusChange(i, status)}
-                            className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
-                          >
-                            {status}
-                          </div>
-                        ))}
+                    <td className="px-6 py-5">
+                      <div
+                        onClick={() =>
+                          navigate(`/teachers/profile/${s.userId}`)
+                        }
+                        className="flex items-center gap-4 cursor-pointer"
+                      >
+                        <Avatar name={s.name} image={s.profileImage} />
+                        <span className="font-medium text-gray-800 hover:text-indigo-600">
+                          {s.name}
+                        </span>
                       </div>
-                    )}
-                  </td>
+                    </td>
 
-                  <td className="px-6 py-5">
-                    <input
-                      type="checkbox"
-                      checked={selectedteachers.includes(s.id)}
-                      onChange={() => toggleSelectOne(s.id)}
-                      className="w-4 h-4"
-                    />
-                  </td>
-                </tr>
+                    <td className="px-6 py-5 font-medium">{s.teacherId}</td>
+                    <td className="px-6 py-5 text-gray-500">{s.email}</td>
+                    <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
+                    <td className="px-6 py-5 text-gray-500 hidden md:table-cell">
+                      {s.country}
+                    </td>
+
+                    <td
+                      className="px-6 py-5 max-w-[280px] truncate text-gray-500 hidden md:table-cell"
+                      title={s.address}
+                    >
+                      {s.address}
+                    </td>
+
+                    <td className="relative px-6 py-5">
+                      <button
+                        onClick={() =>
+                          setOpenStatusIndex(openStatusIndex === i ? null : i)
+                        }
+                        className="flex items-center gap-1"
+                      >
+                        <Badge
+                          text={s.status}
+                          type={statusTypeMap[s.status] || "default"}
+                        />
+
+                        <ChevronDown className="w-3 h-3 text-green-400" />
+                      </button>
+
+                      {openStatusIndex === i && (
+                        <div className="absolute z-10 mt-2 w-36 bg-white border rounded-md shadow">
+                          {statusOptions.map((status) => (
+                            <div
+                              key={status}
+                              onClick={() => handleStatusChange(i, status)}
+                              className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
+                            >
+                              {status}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+
+                    <td className="px-6 py-5">
+                      <input
+                        type="checkbox"
+                        checked={selectedteachers.includes(s.id)}
+                        onChange={() => toggleSelectOne(s.id)}
+                        className="w-4 h-4"
+                      />
+                    </td>
+                  </tr>
                 ))
               )}
             </tbody>

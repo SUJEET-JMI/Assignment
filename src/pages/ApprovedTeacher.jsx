@@ -9,7 +9,6 @@ import { getTeachers, updateTeacherStatus } from "../services/api";
 const statusTypeMap = {
   APPROVED: "success",
   SUSPENDED: "warning",
-  PENDING: "pending",
   REJECTED: "danger",
 };
 
@@ -34,7 +33,7 @@ export default function ApprovedTeacher() {
   const [loading, setLoading] = useState(true);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
   const [selectedteachers, setSelectedteachers] = useState([]);
-  const statusOptions = ["APPROVED", "SUSPENDED", "TERMINATED", "PENDING"];
+  const statusOptions = ["APPROVED", "SUSPENDED", "TERMINATED"];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showExportBar, setShowExportBar] = useState(false);
@@ -96,7 +95,7 @@ const downloadPDF = () => {
 
   // Table rows
   const rows = filteredteachers.map((teachers) => [
-    teachers.teachersId,
+    teachers.teacherId,
     teachers.name,
     teachers.email,
     teachers.mobile,
@@ -120,12 +119,12 @@ const downloadPDF = () => {
 
 
   const handleStatusChange = async (index, status) => {
-    const teachers = filteredteachers[index];
+    const teacher = filteredteachers[index];
     try {
-      await updateTeacherStatus(teachers.userId, status);
+      await updateTeacherStatus(teacher.userId, status);
       // Update local state
       const updated = teachers.map(s =>
-        s.userId === teachers.userId ? { ...s, status: status } : s
+        s.userId === teacher.userId ? { ...s, status: status } : s
       );
       setteachers(updated);
       setOpenStatusIndex(null);
@@ -257,7 +256,7 @@ const downloadPDF = () => {
                     </div>
                   </td>
 
-                  <td className="px-6 py-5 font-medium">{s.teachersId}</td>
+                  <td className="px-6 py-5 font-medium">{s.teacherId}</td>
                   <td className="px-6 py-5 text-gray-500">{s.email}</td>
                   <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
                   <td className="px-6 py-5 text-gray-500 hidden md:table-cell">{s.country}</td>

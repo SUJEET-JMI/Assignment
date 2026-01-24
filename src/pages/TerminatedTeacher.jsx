@@ -5,7 +5,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { getStudents, updateStudentStatus } from "../services/api";
+import { getTeachers, updateTeacherStatus } from "../services/api";
+const statusTypeMap = {
+  APPROVED: "success",
+  SUSPENDED: "warning",
+  REJECTED: "danger",
+};
+
 const Avatar = ({ name, image }) => {
   const initials = name
     .split(" ")
@@ -22,13 +28,12 @@ const Avatar = ({ name, image }) => {
   );
 };
 
-export default function Students() {
-  const [students, setStudents] = useState([]);
+export default function TerminatedTeacher() {
+  const [teachers, setteachers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
-  const [selectedStudents, setSelectedStudents] = useState([]);
-  const statusOptions = ["APPROVED", "SUSPENDED", "TERMINATED"];
+  const [selectedteachers, setSelectedteachers] = useState([]);
+  const statusOptions = ["TERMINATED"];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showExportBar, setShowExportBar] = useState(false);
@@ -38,35 +43,34 @@ export default function Students() {
   const location = useLocation();
 
   useEffect(() => {
-    fetchTerminatedStudents();
+    const fetchteachers = async () => {
+      setLoading(true);
+      try {
+        const params = { status: "TERMINATED" };
+        if (startDate) params.startDate = startDate;
+        if (endDate) params.endDate = endDate;
+        const response = await getTeachers(params);
+        setteachers(response.data || []);
+      } catch (err) {
+        console.error("Failed to fetch teachers:", err);
+        setteachers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchteachers();
   }, [startDate, endDate]);
 
-  const fetchTerminatedStudents = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = { status: "TERMINATED" };
-      if (startDate) params.startDate = startDate;
-      if (endDate) params.endDate = endDate;
-      const response = await getStudents(params);
-      setStudents(response.data || []);
-    } catch (err) {
-      setError("Failed to fetch terminated students");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredStudents = students.filter(student =>
-    student.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredteachers = teachers.filter(teachers =>
+    teachers.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const downloadExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filteredStudents);
+    const ws = XLSX.utils.json_to_sheet(filteredteachers);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Students");
-    XLSX.writeFile(wb, "students.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "teachers");
+    XLSX.writeFile(wb, "teachers.xlsx");
   };
 
   
@@ -76,7 +80,7 @@ const downloadPDF = () => {
 
   // Title
   doc.setFontSize(16);
-  doc.text("Students List", 14, 15);
+  doc.text("teachers List", 14, 15);
 
   // Table columns
   const columns = [
@@ -90,14 +94,14 @@ const downloadPDF = () => {
   ];
 
   // Table rows
-  const rows = filteredStudents.map((student) => [
-    student.studentId,
-    student.name,
-    student.email,
-    student.mobile,
-    student.country,
-    student.address,
-    student.status,
+  const rows = filteredteachers.map((teachers) => [
+    teachers.teacherId,
+    teachers.name,
+    teachers.email,
+    teachers.mobile,
+    teachers.country,
+    teachers.address,
+    teachers.status,
   ]);
 
   // Generate table
@@ -110,18 +114,19 @@ const downloadPDF = () => {
   });
 
   // Download PDF
-  doc.save("students.pdf");
+  doc.save("teachers.pdf");
 };
 
 
   const handleStatusChange = async (index, status) => {
-    const student = students[index];
+    const teacher = filteredteachers[index];
     try {
-      await updateStudentStatus(student.userId, status);
-      const updated = students.map(s =>
-        s.userId === student.userId ? { ...s, status: status } : s
+      await updateTeacherStatus(teacher.userId, status);
+      // Update local state
+      const updated = teachers.map(s =>
+        s.userId === teacher.userId ? { ...s, status: status } : s
       );
-      setStudents(updated);
+      setteachers(updated);
       setOpenStatusIndex(null);
     } catch (err) {
       console.error("Failed to update status:", err);
@@ -130,26 +135,10 @@ const downloadPDF = () => {
   };
 
   const toggleSelectOne = (id) => {
-    setSelectedStudents((prev) =>
+    setSelectedteachers((prev) =>
       prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
     );
   };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center text-red-500 p-4">
-        {error}
-      </div>
-    );
-  }
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen overflow-hidden">
@@ -157,14 +146,14 @@ const downloadPDF = () => {
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-semibold text-gray-800">
-            Terminated Students
+            Terminated teachers
           </h1>
         </div>
 
         <div className="relative flex-1 max-w-sm">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
           <input
-            placeholder="Search student"
+            placeholder="Search teachers"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9 pr-4 py-2 border rounded-md text-sm w-full"
@@ -223,8 +212,8 @@ const downloadPDF = () => {
             <thead className="bg-gray-50 text-gray-500 text-left sticky top-0 z-10">
               <tr className="whitespace-nowrap">
                 <th className="px-6 py-4">S.no</th>
-                <th className="px-6 py-4">Student</th>
-                <th className="px-6 py-4">Student ID</th>
+                <th className="px-6 py-4">teachers</th>
+                <th className="px-6 py-4">teachers ID</th>
                 <th className="px-6 py-4">Email</th>
                 <th className="px-6 py-4">Mobile</th>
                 <th className="px-6 py-4 hidden md:table-cell">Country</th>
@@ -235,69 +224,94 @@ const downloadPDF = () => {
             </thead>
 
             <tbody>
-              {filteredStudents.map((s, i) => (
+              {loading ? (
+                <tr>
+                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                    Loading teachers...
+                  </td>
+                </tr>
+              ) : filteredteachers.length === 0 ? (
+                <tr>
+                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                    No Terminated teachers found.
+                  </td>
+                </tr>
+              ) : (
+                filteredteachers.map((s, i) => (
                 <tr
-                  key={s.id}
+                  key={s.userId}
                   className="border-t hover:bg-gray-50 whitespace-nowrap"
                 >
-                  <td className="px-6 py-5 font-bold text-sm">{i + 1}</td>
+                  <td className="px-6 py-5">{i + 1}</td>
 
                   <td className="px-6 py-5">
                     <div
-                      onClick={() => navigate(`/students/profile/${s.id}`)}
+                      onClick={() => navigate(`/teachers/profile/${s.userId}`)}
                       className="flex items-center gap-4 cursor-pointer"
                     >
-                      <Avatar name={s.name} image={s.image} />
-                      <span className="font-bold text-sm text-gray-800 hover:text-indigo-600">
+                      <Avatar name={s.name} image={s.profileImage} />
+                      <span className="font-medium text-gray-800 hover:text-indigo-600">
                         {s.name}
                       </span>
                     </div>
                   </td>
 
-                  <td className="px-6 py-5 font-bold text-sm">{s.studentId}</td>
-                  <td className="px-6 py-5 font-bold text-sm text-gray-500">{s.email}</td>
-                  <td className="px-6 py-5 font-bold text-sm text-gray-500">{s.mobile}</td>
-                  <td className="px-6 py-5 font-bold text-sm text-gray-500 hidden md:table-cell">{s.country}</td>
+                  <td className="px-6 py-5 font-medium">{s.teacherId}</td>
+                  <td className="px-6 py-5 text-gray-500">{s.email}</td>
+                  <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
+                  <td className="px-6 py-5 text-gray-500 hidden md:table-cell">{s.country}</td>
 
                   <td
-                    className="px-6 py-5 max-w-[280px] truncate font-bold text-sm text-gray-500 hidden md:table-cell"
+                    className="px-6 py-5 max-w-[280px] truncate text-gray-500 hidden md:table-cell"
                     title={s.address}
                   >
                     {s.address}
                   </td>
 
-                  <td className="relative px-6 py-5 ">
+                  <td className="relative px-6 py-5">
                     <button
                       onClick={() =>
                         setOpenStatusIndex(openStatusIndex === i ? null : i)
                       }
                       className="flex items-center gap-1"
                     >
-                      <Badge
-                        text={s.status}
-                        type={
-                          s.status === "APPROVED"
-                            ? "success"
-                            : s.status === "SUSPENDED"
-                              ? "warning"
-                              : "danger"
-                        }
-                      />
+                      
+
+<Badge
+  text={s.status}
+  type={statusTypeMap[s.status] || "default"}
+/>
+
+<ChevronDown className="w-3 h-3 text-green-400" />
 
                     </button>
 
+                    {openStatusIndex === i && (
+                      <div className="absolute z-10 mt-2 w-36 bg-white border rounded-md shadow">
+                        {statusOptions.map((status) => (
+                          <div
+                            key={status}
+                            onClick={() => handleStatusChange(i, status)}
+                            className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
+                          >
+                            {status}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </td>
 
                   <td className="px-6 py-5">
                     <input
                       type="checkbox"
-                      checked={selectedStudents.includes(s.id)}
+                      checked={selectedteachers.includes(s.id)}
                       onChange={() => toggleSelectOne(s.id)}
                       className="w-4 h-4"
                     />
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>
