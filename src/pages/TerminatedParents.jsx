@@ -84,7 +84,6 @@ const downloadPDF = () => {
     "Name",
     "Email",
     "Mobile",
-    "Country",
     "Address",
     "Status",
   ];
@@ -233,7 +232,6 @@ const downloadPDF = () => {
                 <th className="px-6 py-4">Parent ID</th>
                 <th className="px-6 py-4">Email</th>
                 <th className="px-6 py-4">Mobile</th>
-                <th className="px-6 py-4 hidden md:table-cell">Country</th>
                 <th className="px-6 py-4 hidden md:table-cell">Address</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Approved Check</th>
@@ -243,27 +241,26 @@ const downloadPDF = () => {
             <tbody>
               {filteredParents.map((s, i) => (
                 <tr
-                  key={s.id}
+                  key={s.userId}
                   className="border-t hover:bg-gray-50 whitespace-nowrap"
                 >
                   <td className="px-6 py-5 font-bold text-sm">{i + 1}</td>
 
                   <td className="px-6 py-5">
                     <div
-                      onClick={() => navigate(`/Parents/profile/${s.id}`)}
+                      onClick={() => navigate(`/parents/profile/${s.userId}`)}
                       className="flex items-center gap-4 cursor-pointer"
                     >
-                      <Avatar name={s.name} image={s.image} />
+                      <Avatar name={s.name} image={s.profileImage} />
                       <span className="font-bold text-sm text-gray-800 hover:text-indigo-600">
                         {s.name}
                       </span>
                     </div>
                   </td>
 
-                  <td className="px-6 py-5 font-bold text-sm">{s.ParentId}</td>
+                  <td className="px-6 py-5 font-bold text-sm">{s.parentId}</td>
                   <td className="px-6 py-5 font-bold text-sm text-gray-500">{s.email}</td>
                   <td className="px-6 py-5 font-bold text-sm text-gray-500">{s.mobile}</td>
-                  <td className="px-6 py-5 font-bold text-sm text-gray-500 hidden md:table-cell">{s.country}</td>
 
                   <td
                     className="px-6 py-5 max-w-[280px] truncate font-bold text-sm text-gray-500 hidden md:table-cell"
@@ -297,8 +294,8 @@ const downloadPDF = () => {
                   <td className="px-6 py-5">
                     <input
                       type="checkbox"
-                      checked={selectedParents.includes(s.id)}
-                      onChange={() => toggleSelectOne(s.id)}
+                      checked={selectedParents.includes(s.userId)}
+                      onChange={() => toggleSelectOne(s.userId)}
                       className="w-4 h-4"
                     />
                   </td>

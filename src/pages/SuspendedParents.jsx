@@ -86,18 +86,16 @@ const downloadPDF = () => {
     "Name",
     "Email",
     "Mobile",
-    "Country",
     "Address",
     "Status",
   ];
 
   // Table rows
   const rows = filteredSuspendedParents.map((Parent) => [
-    Parent.ParentId,
+    Parent.parentId,
     Parent.name,
     Parent.email,
     Parent.mobile,
-    Parent.country,
     Parent.address,
     Parent.status,
   ]);
@@ -230,19 +228,19 @@ const downloadPDF = () => {
               {loading ? (
                 <tr
                 >
-                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                  <td colSpan="8" className="px-6 py-5 text-center text-gray-500">
                     Loading suspended Parents...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan="9" className="px-6 py-5 text-center text-red-500">
+                  <td colSpan="8" className="px-6 py-5 text-center text-red-500">
                     {error}
                   </td>
                 </tr>
               ) : filteredSuspendedParents.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                  <td colSpan="8" className="px-6 py-5 text-center text-gray-500">
                     No suspended Parents found
                   </td>
                 </tr>
@@ -256,7 +254,7 @@ const downloadPDF = () => {
 
                     <td className="px-6 py-5">
                       <div
-                        onClick={() => navigate(`/Parents/profile/${s.userId}`)}
+                        onClick={() => navigate(`/parents/profile/${s.userId}`)}
                         className="flex items-center gap-4 cursor-pointer"
                       >
                         <Avatar name={s.name} image={s.profileImage} />
@@ -266,10 +264,9 @@ const downloadPDF = () => {
                       </div>
                     </td>
 
-                    <td className="px-6 py-5 font-medium">{s.ParentId}</td>
+                    <td className="px-6 py-5 font-medium">{s.parentId}</td>
                     <td className="px-6 py-5 text-gray-500">{s.email}</td>
                     <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
-                    <td className="px-6 py-5 text-gray-500 hidden md:table-cell">{s.country}</td>
 
                     <td
                       className="px-6 py-5 max-w-[280px] truncate text-gray-500 hidden md:table-cell"
