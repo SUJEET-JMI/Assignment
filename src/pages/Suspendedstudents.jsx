@@ -25,6 +25,7 @@ const Avatar = ({ name, image }) => {
 
 export default function SuspendedStudents() {
   const [SuspendedStudents, setSuspendedStudents] = useState([]);
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
@@ -119,9 +120,16 @@ const downloadPDF = () => {
     const student = SuspendedStudents[index];
     try {
       await updateStudentStatus(student.userId, status);
-      const updated = [...SuspendedStudents];
-      updated[index].status = status;
-      setSuspendedStudents(updated);
+      if (status !== "SUSPENDED") {
+        const updated = students.filter(s => s.userId !== student.userId);
+        setStudents(updated);
+      } else {
+        // Update local state if still APPROVED
+        const updated = students.map(s =>
+          s.userId === student.userId ? { ...s, status: status } : s
+        );
+        setStudents(updated);
+      }
       setOpenStatusIndex(null);
     } catch (err) {
       console.error("Failed to update status:", err);

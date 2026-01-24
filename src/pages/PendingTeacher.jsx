@@ -120,11 +120,17 @@ export default function PendingTeacher() {
     const teacher = filteredteachers[index];
         try {
           await updateTeacherStatus(teacher.userId, status);
-          // Update local state
-          const updated = teachers.map(s =>
-            s.userId === teacher.userId ? { ...s, status: status } : s
-          );
-      setteachers(updated);
+          // If status changed to something other than PENDING, remove from list
+          if (status !== "PENDING") {
+            const updated = teachers.filter(s => s.userId !== teacher.userId);
+            setteachers(updated);
+          } else {
+            // Update local state if still PENDING
+            const updated = teachers.map(s =>
+              s.userId === teacher.userId ? { ...s, status: status } : s
+            );
+            setteachers(updated);
+          }
       setOpenStatusIndex(null);
     } catch (err) {
       console.error("Failed to update status:", err);

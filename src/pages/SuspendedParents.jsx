@@ -2,15 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Search, MoreHorizontal, ChevronDown } from "lucide-react";
 import Badge from "../components/Badge";
 import { useNavigate, useLocation } from "react-router-dom";
-import * as XLSX from "xlsx";
+import * as XLSX from 'xlsx';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { getTeachers, updateTeacherStatus } from "../services/api";
-const statusTypeMap = {
-  APPROVED: "success",
-  SUSPENDED: "warning",
-  REJECTED: "danger",
-};
+import { getParents, updateParentStatus } from "../services/api";
 
 const Avatar = ({ name, image }) => {
   const initials = name
@@ -28,12 +23,14 @@ const Avatar = ({ name, image }) => {
   );
 };
 
-export default function TerminatedTeacher() {
-  const [teachers, setteachers] = useState([]);
+export default function SuspendedParents() {
+  const [SuspendedParents, setSuspendedParents] = useState([]);
+  const [Parents, setParents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [openStatusIndex, setOpenStatusIndex] = useState(null);
-  const [selectedteachers, setSelectedteachers] = useState([]);
-  const statusOptions = ["TERMINATED"];
+  const [selectedSuspendedParents, setSelectedSuspendedParents] = useState([]);
+  const statusOptions = ["APPROVED", "SUSPENDED", "TERMINATED"];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [showExportBar, setShowExportBar] = useState(false);
@@ -43,92 +40,95 @@ export default function TerminatedTeacher() {
   const location = useLocation();
 
   useEffect(() => {
-    const fetchteachers = async () => {
-      setLoading(true);
-      try {
-        const params = { status: "TERMINATED" };
-        if (startDate) params.startDate = startDate;
-        if (endDate) params.endDate = endDate;
-        const response = await getTeachers(params);
-        setteachers(response.data || []);
-      } catch (err) {
-        console.error("Failed to fetch teachers:", err);
-        setteachers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchteachers();
+    fetchSuspendedParents();
   }, [startDate, endDate]);
 
-  const filteredteachers = teachers.filter((teachers) =>
-    teachers.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  const fetchSuspendedParents = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = { status: "SUSPENDED" };
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      const response = await getParents(params);
+      setSuspendedParents(response.data || []);
+    } catch (err) {
+      setError("Failed to fetch suspended Parents");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredSuspendedParents = SuspendedParents.filter(Parent =>
+    Parent.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const downloadExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filteredteachers);
+    const ws = XLSX.utils.json_to_sheet(filteredSuspendedParents);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "teachers");
-    XLSX.writeFile(wb, "teachers.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "SuspendedParents");
+    XLSX.writeFile(wb, "SuspendedParents.xlsx");
   };
 
-  const downloadPDF = () => {
-    const doc = new jsPDF();
+  
 
-    // Title
-    doc.setFontSize(16);
-    doc.text("teachers List", 14, 15);
+const downloadPDF = () => {
+  const doc = new jsPDF();
 
-    // Table columns
-    const columns = [
-      "ID",
-      "Name",
-      "Email",
-      "Mobile",
-      "Country",
-      "Address",
-      "Status",
-    ];
+  // Title
+  doc.setFontSize(16);
+  doc.text("SuspendedParents List", 14, 15);
 
-    // Table rows
-    const rows = filteredteachers.map((teachers) => [
-      teachers.teacherId,
-      teachers.name,
-      teachers.email,
-      teachers.mobile,
-      teachers.country,
-      teachers.address,
-      teachers.status,
-    ]);
+  // Table columns
+  const columns = [
+    "ID",
+    "Name",
+    "Email",
+    "Mobile",
+    "Country",
+    "Address",
+    "Status",
+  ];
 
-    // Generate table
-    autoTable(doc, {
-      head: [columns],
-      body: rows,
-      startY: 25,
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [22, 163, 74] }, // green header
-    });
+  // Table rows
+  const rows = filteredSuspendedParents.map((Parent) => [
+    Parent.ParentId,
+    Parent.name,
+    Parent.email,
+    Parent.mobile,
+    Parent.country,
+    Parent.address,
+    Parent.status,
+  ]);
 
-    // Download PDF
-    doc.save("teachers.pdf");
-  };
+  // Generate table
+  autoTable(doc, {
+    head: [columns],
+    body: rows,
+    startY: 25,
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [22, 163, 74] }, // green header
+  });
+
+  // Download PDF
+  doc.save("SuspendedParents.pdf");
+};
+
 
   const handleStatusChange = async (index, status) => {
-    const teacher = filteredteachers[index];
+    const Parent = SuspendedParents[index];
     try {
-      await updateTeacherStatus(teacher.userId, status);
-      // If status changed to something other than TERMINATED, remove from list
-      if (status !== "TERMINATED") {
-        const updated = teachers.filter((s) => s.userId !== teacher.userId);
-        setteachers(updated);
+      await updateParentStatus(Parent.userId, status);
+      if (status !== "SUSPENDED") {
+        const updated = Parents.filter(s => s.userId !== Parent.userId);
+        setParents(updated);
       } else {
-        // Update local state if still TERMINATED
-        const updated = teachers.map((s) =>
-          s.userId === teacher.userId ? { ...s, status: status } : s,
+        // Update local state if still APPROVED
+        const updated = Parents.map(s =>
+          s.userId === Parent.userId ? { ...s, status: status } : s
         );
-        setteachers(updated);
+        setParents(updated);
       }
       setOpenStatusIndex(null);
     } catch (err) {
@@ -138,7 +138,7 @@ export default function TerminatedTeacher() {
   };
 
   const toggleSelectOne = (id) => {
-    setSelectedteachers((prev) =>
+    setSelectedSuspendedParents((prev) =>
       prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
     );
   };
@@ -149,14 +149,14 @@ export default function TerminatedTeacher() {
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-semibold text-gray-800">
-            Terminated teachers
+            Suspended Parents
           </h1>
         </div>
 
         <div className="relative flex-1 max-w-sm">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
           <input
-            placeholder="Search teachers"
+            placeholder="Search Parent"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9 pr-4 py-2 border rounded-md text-sm w-full"
@@ -193,19 +193,15 @@ export default function TerminatedTeacher() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
           <button
             className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 w-full sm:w-auto"
-            onClick={() => {
-              (console.log("Download Excel", startDate, endDate),
-                downloadExcel());
-            }}
+            onClick={() => {console.log("Download Excel", startDate, endDate), downloadExcel()}}
           >
             Download Excel
+
           </button>
 
           <button
             className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 w-full sm:w-auto"
-            onClick={() => {
-              (console.log("Download PDF", startDate, endDate), downloadPDF());
-            }}
+            onClick={() => {console.log("Download PDF", startDate, endDate),downloadPDF()}}
           >
             Download PDF
           </button>
@@ -219,8 +215,8 @@ export default function TerminatedTeacher() {
             <thead className="bg-gray-50 text-gray-500 text-left sticky top-0 z-10">
               <tr className="whitespace-nowrap">
                 <th className="px-6 py-4">S.no</th>
-                <th className="px-6 py-4">teachers</th>
-                <th className="px-6 py-4">teachers ID</th>
+                <th className="px-6 py-4">Parent</th>
+                <th className="px-6 py-4">Parent ID</th>
                 <th className="px-6 py-4">Email</th>
                 <th className="px-6 py-4">Mobile</th>
                 <th className="px-6 py-4 hidden md:table-cell">Country</th>
@@ -232,25 +228,26 @@ export default function TerminatedTeacher() {
 
             <tbody>
               {loading ? (
-                <tr>
-                  <td
-                    colSpan="9"
-                    className="px-6 py-5 text-center text-gray-500"
-                  >
-                    Loading teachers...
+                <tr
+                >
+                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                    Loading suspended Parents...
                   </td>
                 </tr>
-              ) : filteredteachers.length === 0 ? (
+              ) : error ? (
                 <tr>
-                  <td
-                    colSpan="9"
-                    className="px-6 py-5 text-center text-gray-500"
-                  >
-                    No Terminated teachers found.
+                  <td colSpan="9" className="px-6 py-5 text-center text-red-500">
+                    {error}
+                  </td>
+                </tr>
+              ) : filteredSuspendedParents.length === 0 ? (
+                <tr>
+                  <td colSpan="9" className="px-6 py-5 text-center text-gray-500">
+                    No suspended Parents found
                   </td>
                 </tr>
               ) : (
-                filteredteachers.map((s, i) => (
+                filteredSuspendedParents.map((s, i) => (
                   <tr
                     key={s.userId}
                     className="border-t hover:bg-gray-50 whitespace-nowrap"
@@ -259,9 +256,7 @@ export default function TerminatedTeacher() {
 
                     <td className="px-6 py-5">
                       <div
-                        onClick={() =>
-                          navigate(`/teachers/profile/${s.userId}`)
-                        }
+                        onClick={() => navigate(`/Parents/profile/${s.userId}`)}
                         className="flex items-center gap-4 cursor-pointer"
                       >
                         <Avatar name={s.name} image={s.profileImage} />
@@ -271,12 +266,10 @@ export default function TerminatedTeacher() {
                       </div>
                     </td>
 
-                    <td className="px-6 py-5 font-medium">{s.teacherId}</td>
+                    <td className="px-6 py-5 font-medium">{s.ParentId}</td>
                     <td className="px-6 py-5 text-gray-500">{s.email}</td>
                     <td className="px-6 py-5 text-gray-500">{s.mobile}</td>
-                    <td className="px-6 py-5 text-gray-500 hidden md:table-cell">
-                      {s.country}
-                    </td>
+                    <td className="px-6 py-5 text-gray-500 hidden md:table-cell">{s.country}</td>
 
                     <td
                       className="px-6 py-5 max-w-[280px] truncate text-gray-500 hidden md:table-cell"
@@ -294,8 +287,15 @@ export default function TerminatedTeacher() {
                       >
                         <Badge
                           text={s.status}
-                          type={statusTypeMap[s.status] || "default"}
+                          type={
+                            s.status === "APPROVED"
+                              ? "success"
+                              : s.status === "SUSPENDED"
+                                ? "warning"
+                                : "danger"
+                          }
                         />
+                        <ChevronDown className="w-3 h-3 text-yellow-400" />
                       </button>
 
                       {openStatusIndex === i && (
@@ -316,8 +316,8 @@ export default function TerminatedTeacher() {
                     <td className="px-6 py-5">
                       <input
                         type="checkbox"
-                        checked={selectedteachers.includes(s.id)}
-                        onChange={() => toggleSelectOne(s.id)}
+                        checked={selectedSuspendedParents.includes(s.userId)}
+                        onChange={() => toggleSelectOne(s.userId)}
                         className="w-4 h-4"
                       />
                     </td>

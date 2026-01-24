@@ -22,7 +22,7 @@ const Avatar = ({ name, image }) => {
   );
 };
 
-export default function Students() {
+export default function TerminatedStudent() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -118,10 +118,16 @@ const downloadPDF = () => {
     const student = students[index];
     try {
       await updateStudentStatus(student.userId, status);
-      const updated = students.map(s =>
-        s.userId === student.userId ? { ...s, status: status } : s
-      );
-      setStudents(updated);
+      if (status !== "TERMINATED") {
+        const updated = students.filter(s => s.userId !== student.userId);
+        setStudents(updated);
+      } else {
+        // Update local state if still APPROVED
+        const updated = students.map(s =>
+          s.userId === student.userId ? { ...s, status: status } : s
+        );
+        setStudents(updated);
+      }
       setOpenStatusIndex(null);
     } catch (err) {
       console.error("Failed to update status:", err);
