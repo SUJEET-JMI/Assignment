@@ -17,6 +17,7 @@ import ApprovedParents from './pages/ApprovedParents';
 import TerminatedParents from './pages/TerminatedParents';
 import SuspendedParents from './pages/SuspendedParents';
 import Class from './pages/Class';
+import Subject from './pages/Subject';
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -41,6 +42,7 @@ export default function App() {
             <Route path="/parents" element={<ApprovedParents />} />
             <Route path="/parents/suspended" element={<SuspendedParents />} />
             <Route path="/parents/terminated" element={<TerminatedParents />} />
+            <Route path="/subject" element={<Subject/>}/>
             <Route path="/" element={<Dashboard />} /> {/* Default to dashboard */}
           </Routes>
         </div>

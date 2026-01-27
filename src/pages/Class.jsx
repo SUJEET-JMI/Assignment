@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, X, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   createClass,
@@ -10,6 +11,7 @@ import {
 } from "../services/api";
 
 export default function Class() {
+  const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingLoading, setSavingLoading] = useState(false);
@@ -155,7 +157,8 @@ export default function Class() {
           {classes.map((cls) => (
             <div
               key={cls.id}
-              className="bg-white p-6 rounded-lg shadow-md border hover:shadow-lg transition-shadow"
+              className="bg-white p-6 rounded-lg shadow-md border hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => navigate(`/subject?class=${encodeURIComponent(cls.className)}`)}
             >
               <div className="flex items-start justify-between">
                 <div>

@@ -89,3 +89,40 @@ export const updateClassStatus = async (id, status) => {
     body: JSON.stringify({ status }),
   }).then(json);
 };
+
+// Subjects API
+export const createSubject = async (subjectData) => {
+  return fetch(`${BASE_URL}/subjects`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(subjectData),
+  }).then(json);
+};
+
+export const getAllSubjects = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const url = `${BASE_URL}/subjects${query ? `?${query}` : ""}`;
+  return fetch(url).then(json);
+};
+
+export const editSubject = async (id, subjectData) => {
+  return fetch(`${BASE_URL}/subjects/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(subjectData),
+  }).then(json);
+};
+
+export const deleteSubject = async (id) => {
+  return fetch(`${BASE_URL}/subjects/${id}`, {
+    method: "DELETE",
+  }).then(json);
+};
+
+export const updateSubjectStatus = async (id, status) => {
+  return fetch(`${BASE_URL}/subjects/${id}/status`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  }).then(json);
+};
