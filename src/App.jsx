@@ -17,6 +17,7 @@ import ApprovedParents from './pages/ApprovedParents';
 import TerminatedParents from './pages/TerminatedParents';
 import SuspendedParents from './pages/SuspendedParents';
 import Course from './pages/Course';
+import CourseProfile from './pages/CourseProfile';
 import Class from './pages/Class';
 import Subject from './pages/Subject';
 
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="/parents/terminated" element={<TerminatedParents />} />
             <Route path="/subject" element={<Subject/>}/>
             <Route path="/course" element={<Course/>}/>
+            <Route path="/course/profile/:id" element={<CourseProfile/>}/>
             <Route path="/" element={<Dashboard />} /> {/* Default to dashboard */}
           </Routes>
         </div>

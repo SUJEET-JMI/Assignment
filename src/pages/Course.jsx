@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, X, Loader2, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   createCourse,
@@ -13,6 +14,7 @@ const DIFFICULTY_LEVELS = ["Beginner", "Intermediate", "Advanced"];
 const COURSE_TYPES = ["academic", "non-academic"];
 
 export default function Course() {
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingLoading, setSavingLoading] = useState(false);
@@ -399,7 +401,11 @@ export default function Course() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {courses.map((course) => (
-                <tr key={course.id} className="hover:bg-gray-50">
+                <tr
+                  key={course.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => navigate(`/course/profile/${course.id}`)}
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {course.courseName}

@@ -157,5 +157,8 @@ export const updateCourseStatus = async (id, status) => {
   body: JSON.stringify({ status }),
   }).then(json);
 };
+export const getCourseById = async (id) => {
+  return fetch(`${BASE_URL}/courses/${id}`).then(json);
+};
 
 
