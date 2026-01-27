@@ -126,3 +126,36 @@ export const updateSubjectStatus = async (id, status) => {
     body: JSON.stringify({ status }),
   }).then(json);
 };
+export const createCourse = async (courseData) => {
+  return fetch(`${BASE_URL}/courses`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(courseData),
+  }).then(json);
+};
+export const getAllCourses = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const url = `${BASE_URL}/courses${query ? `?${query}` : ""}`;
+  return fetch(url).then(json);
+};
+export const editCourse = async (id, courseData) => {
+  return fetch(`${BASE_URL}/courses/${id}`, {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(courseData),
+  }).then(json);
+};
+export const deleteCourse = async (id) => {
+  return fetch(`${BASE_URL}/courses/${id}`, {
+  method: "DELETE",
+  }).then(json);
+};
+export const updateCourseStatus = async (id, status) => {
+  return fetch(`${BASE_URL}/courses/${id}/status`, {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ status }),
+  }).then(json);
+};
+
+

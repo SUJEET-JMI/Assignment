@@ -23,7 +23,7 @@ const menu = [
     submenu: [
       { label: "Class", path: "/Class" },
       { label: "Subject", path: "/Subject" },
-      { label: "Courses", path: "/Courses" }
+      { label: "Courses", path: "/Course" }
     ]
   },
 
