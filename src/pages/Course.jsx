@@ -24,10 +24,11 @@ export default function Course() {
     courseName: "",
     courseType: "",
     courseDescription: "",
-    thumbnailUrl: "",
+    thumbnail: null,
     difficulty: "",
     price: "",
     deadline: "",
+    courseDuration: "",
     // Academic fields
     board: "",
     medium: "",
@@ -47,6 +48,7 @@ export default function Course() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterDifficulty, setFilterDifficulty] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     fetchCourses();
@@ -101,10 +103,11 @@ export default function Course() {
       courseName: "",
       courseType: "",
       courseDescription: "",
-      thumbnailUrl: "",
+      thumbnail: null,
       difficulty: "",
       price: "",
       deadline: "",
+      courseDuration: "",
       // Academic fields
       board: "",
       medium: "",
@@ -117,6 +120,7 @@ export default function Course() {
       targetAudience: "",
       totalLessons: "",
     });
+    setFieldErrors({});
     setIsPopupOpen(true);
   };
 
@@ -126,10 +130,11 @@ export default function Course() {
       courseName: course.courseName,
       courseType: course.courseType,
       courseDescription: course.courseDescription || "",
-      thumbnailUrl: course.thumbnailUrl || "",
+      thumbnail: null, // Reset to null for file input
       difficulty: course.difficulty,
       price: course.price || "",
       deadline: course.deadline ? course.deadline.split('T')[0] : "",
+      courseDuration: course.courseDuration || "",
       // Academic fields
       board: course.board || "",
       medium: course.medium || "",
@@ -162,22 +167,33 @@ export default function Course() {
   };
 
   const handleSave = async () => {
-    if (!formData.courseName || !formData.courseType || !formData.courseDescription || !formData.difficulty) {
-      toast.error("Please fill all required fields (Course Name, Type, Description, and Difficulty)");
-      return;
-    }
+    const errors = {};
+
+    if (!formData.courseName) errors.courseName = true;
+    if (!formData.courseType) errors.courseType = true;
+    if (!formData.courseDescription) errors.courseDescription = true;
+    if (!formData.difficulty) errors.difficulty = true;
+    if (!formData.deadline) errors.deadline = true;
+    if (!formData.courseDuration) errors.courseDuration = true;
 
     // Validation for academic courses
-    if (formData.courseType === "academic" && (!formData.classname || !formData.subject)) {
-      toast.error("Class Level and Subject are required for academic courses");
-      return;
+    if (formData.courseType === "academic") {
+      if (!formData.classname) errors.classname = true;
+      if (!formData.subject) errors.subject = true;
     }
 
     // Validation for non-academic courses
-    if (formData.courseType === "non-academic" && !formData.category) {
-      toast.error("Category is required for non-academic courses");
+    if (formData.courseType === "non-academic") {
+      if (!formData.category) errors.category = true;
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      toast.error("Please fill all required fields");
       return;
     }
+
+    setFieldErrors({});
 
     setSavingLoading(true);
     setFullScreenLoading(true);
@@ -239,6 +255,7 @@ export default function Course() {
       difficulty: "",
       price: "",
       deadline: "",
+      courseDuration: "",
       board: "",
       medium: "",
       classname: "",
@@ -543,9 +560,12 @@ export default function Course() {
                     onChange={(e) =>
                       setFormData({ ...formData, courseName: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className={`w-full px-3 py-2 border ${fieldErrors.courseName ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                     placeholder="Enter course name"
                   />
+                  {fieldErrors.courseName && (
+                    <p className="text-red-500 text-xs mt-1">Please fill this field, this field is required</p>
+                  )}
                 </div>
 
                 <div>
@@ -557,7 +577,7 @@ export default function Course() {
                     onChange={(e) =>
                       setFormData({ ...formData, courseType: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className={`w-full px-3 py-2 border ${fieldErrors.courseType ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                   >
                     <option value="">Select Type</option>
                     {COURSE_TYPES.map((type) => (
@@ -566,6 +586,9 @@ export default function Course() {
                       </option>
                     ))}
                   </select>
+                  {fieldErrors.courseType && (
+                    <p className="text-red-500 text-xs mt-1">Please fill this field, this field is required</p>
+                  )}
                 </div>
 
                 <div>
@@ -577,7 +600,7 @@ export default function Course() {
                     onChange={(e) =>
                       setFormData({ ...formData, difficulty: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className={`w-full px-3 py-2 border ${fieldErrors.difficulty ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                   >
                     <option value="">Select Difficulty</option>
                     {DIFFICULTY_LEVELS.map((level) => (
@@ -586,6 +609,9 @@ export default function Course() {
                       </option>
                     ))}
                   </select>
+                  {fieldErrors.difficulty && (
+                    <p className="text-red-500 text-xs mt-1">Please fill this field, this field is required</p>
+                  )}
                 </div>
 
                 <div>
@@ -607,22 +633,26 @@ export default function Course() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Thumbnail URL
+                    Thumbnail Image
                   </label>
                   <input
-                    type="url"
-                    value={formData.thumbnailUrl}
+                    type="file"
+                    accept="image/*"
                     onChange={(e) =>
-                      setFormData({ ...formData, thumbnailUrl: e.target.value })
+                      setFormData({ ...formData, thumbnail: e.target.files[0] })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Enter thumbnail URL"
                   />
+                  {formData.thumbnail && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      Selected: {formData.thumbnail.name}
+                    </p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Deadline
+                    Deadline Of Course*
                   </label>
                   <input
                     type="date"
@@ -630,9 +660,29 @@ export default function Course() {
                     onChange={(e) =>
                       setFormData({ ...formData, deadline: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className={`w-full px-3 py-2 border ${fieldErrors.deadline ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                   />
+                  {fieldErrors.deadline && (
+                    <p className="text-red-500 text-xs mt-1">Please fill this field, this field is required</p>
+                  )}
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Course Duration for student*
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.courseDuration}
+                    onChange={(e) =>
+                      setFormData({ ...formData, courseDuration: e.target.value })
+                    }
+                    className={`w-full px-3 py-2 border ${fieldErrors.courseDuration ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+                  />
+                  {fieldErrors.courseDuration && (
+                    <p className="text-red-500 text-xs mt-1">Please fill this field, this field is required</p>
+                  )}
+                </div>
+                      
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -697,9 +747,12 @@ export default function Course() {
                       onChange={(e) =>
                         setFormData({ ...formData, classname: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className={`w-full px-3 py-2 border ${fieldErrors.classname ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                       placeholder="Enter class level"
                     />
+                    {fieldErrors.classname && (
+                      <p className="text-red-500 text-xs mt-1">Please fill this field, this field is required</p>
+                    )}
                   </div>
 
                   <div>
@@ -712,9 +765,12 @@ export default function Course() {
                       onChange={(e) =>
                         setFormData({ ...formData, subject: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className={`w-full px-3 py-2 border ${fieldErrors.subject ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                       placeholder="Enter subject"
                     />
+                    {fieldErrors.courseDescription && (
+                  <p className="text-red-500 text-xs mt-1">Please fill this field, this field is required</p>
+                )}
                   </div>
 
                   <div>
@@ -750,9 +806,12 @@ export default function Course() {
                       onChange={(e) =>
                         setFormData({ ...formData, category: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className={`w-full px-3 py-2 border ${fieldErrors.category ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                       placeholder="Enter category"
                     />
+                    {fieldErrors.category && (
+                      <p className="text-red-500 text-xs mt-1">Please fill this field, this field is required</p>
+                    )}
                   </div>
 
                   <div>
@@ -799,10 +858,13 @@ export default function Course() {
                       courseDescription: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className={`w-full px-3 py-2 border ${fieldErrors.courseDescription ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                   placeholder="Enter course description"
                   rows="4"
                 />
+                {fieldErrors.courseDescription && (
+                  <p className="text-red-500 text-xs mt-1">Please fill this field, this field is required</p>
+                )}
               </div>
             </div>
 

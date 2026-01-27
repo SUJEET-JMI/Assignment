@@ -1,6 +1,8 @@
  const BASE_URL = "http://localhost:5000/api"; // Adjust if backend runs on different port
 // const BASE_URL = "https://classplus-iwn1.onrender.com/api"; // Adjust if backend runs on different port
 
+export const BACKEND_BASE_URL = "http://localhost:5000"; // For static files
+
 const json = async (response) => {
   if (!response.ok) {
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
@@ -127,10 +129,22 @@ export const updateSubjectStatus = async (id, status) => {
   }).then(json);
 };
 export const createCourse = async (courseData) => {
+  const formData = new FormData();
+
+  // Append all fields to FormData
+  Object.keys(courseData).forEach(key => {
+    if (courseData[key] !== null && courseData[key] !== undefined) {
+      if (key === 'thumbnail' && courseData[key] instanceof File) {
+        formData.append('thumbnail', courseData[key]);
+      } else {
+        formData.append(key, courseData[key]);
+      }
+    }
+  });
+
   return fetch(`${BASE_URL}/courses`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(courseData),
+    method: "POST",
+    body: formData,
   }).then(json);
 };
 export const getAllCourses = async (params = {}) => {
@@ -139,10 +153,22 @@ export const getAllCourses = async (params = {}) => {
   return fetch(url).then(json);
 };
 export const editCourse = async (id, courseData) => {
+  const formData = new FormData();
+
+  // Append all fields to FormData
+  Object.keys(courseData).forEach(key => {
+    if (courseData[key] !== null && courseData[key] !== undefined) {
+      if (key === 'thumbnail' && courseData[key] instanceof File) {
+        formData.append('thumbnail', courseData[key]);
+      } else {
+        formData.append(key, courseData[key]);
+      }
+    }
+  });
+
   return fetch(`${BASE_URL}/courses/${id}`, {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(courseData),
+    method: "PUT",
+    body: formData,
   }).then(json);
 };
 export const deleteCourse = async (id) => {

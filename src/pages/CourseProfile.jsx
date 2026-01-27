@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { getCourseById } from "../services/api";
+import { getCourseById, BACKEND_BASE_URL } from "../services/api";
 import { toast } from "react-toastify";
 
 export default function CourseProfile() {
   const { id } = useParams();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchCourse();
@@ -47,33 +48,41 @@ export default function CourseProfile() {
   }
 
   return (
-    <div className="p-4 bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Course Profile</h1>
+    <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">Course Profile</h1>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          {/* Header Section */}
-          <div className="mb-6">
-            <div className="flex items-start gap-4">
-              {course.thumbnailUrl && (
+        <div className="bg-white rounded-xl shadow-lg p-8">
+        {/* Large Image Section */}
+          {course.thumbnail && (
+            <div className="mt-8">
+              <h3 className="text-lg font-medium text-gray-800 mb-4 text-center">Course Image</h3>
+              <div className="relative overflow-hidden rounded-xl shadow-lg bg-gray-100">
                 <img
-                  src={course.thumbnailUrl}
+                  src={`${BACKEND_BASE_URL}${course.thumbnail}`}
                   alt={course.courseName}
-                  className="w-24 h-24 object-cover rounded-lg"
+                  className="w-full h-32 md:h-32 object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
+                  onClick={() => setIsModalOpen(true)}
                 />
-              )}
-              <div className="flex-1">
-                <h2 className="text-xl font-semibold text-gray-800">{course.courseName}</h2>
-                <p className="text-sm text-gray-500">Code: {course.courseCode}</p>
-                <div className="flex items-center gap-4 mt-2">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    course.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {course.status}
-                  </span>
-                  <span className="text-sm text-gray-600">{course.courseType}</span>
-                  <span className="text-sm text-gray-600">{course.difficulty}</span>
+                <div className="absolute inset-0 bg-opacity-0 hover:bg-opacity-10 transition-opacity duration-300 flex items-center justify-center">
+                  <span className="text-white text-lg font-medium opacity-0 hover:opacity-100 transition-opacity duration-300">Click to enlarge</span>
                 </div>
+              </div>
+            </div>
+          )}
+          {/* Header Section */}
+          <div className="mb-8">
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-2">{course.courseName}</h2>
+              <p className="text-lg text-gray-500 mb-4">Code: {course.courseCode}</p>
+              <div className="flex items-center justify-center gap-6 flex-wrap">
+                <span className={`px-3 py-1 text-sm rounded-full font-medium ${
+                  course.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {course.status}
+                </span>
+                <span className="text-sm text-gray-600 bg-blue-50 px-3 py-1 rounded-full">{course.courseType}</span>
+                <span className="text-sm text-gray-600 bg-purple-50 px-3 py-1 rounded-full">{course.difficulty}</span>
               </div>
             </div>
           </div>
@@ -97,7 +106,14 @@ export default function CourseProfile() {
                   <p className="text-sm text-gray-800">{course.totalLessons}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-600">Deadline</label>
+                <label className="block">Course Duration for student</label>
+                <p className="text-sm" >{course.courseDuration}</p> 
+                </div>
+
+
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Deadline of Course</label>
                   <p className="text-sm text-gray-800">
                     {course.deadline ? new Date(course.deadline).toLocaleDateString() : 'No deadline'}
                   </p>
@@ -165,8 +181,30 @@ export default function CourseProfile() {
               </div>
             </div>
           </div>
+
+          
         </div>
       </div>
+
+      {/* Image Modal */}
+      {isModalOpen && course.thumbnail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setIsModalOpen(false)}>
+          <div className="relative max-w-4xl max-h-full p-4">
+            <img
+              src={`${BACKEND_BASE_URL}${course.thumbnail}`}
+              alt={course.courseName}
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              className="absolute top-2 right-2 text-white bg-gray-800 rounded-full p-2 hover:bg-gray-700"
+              onClick={() => setIsModalOpen(false)}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
