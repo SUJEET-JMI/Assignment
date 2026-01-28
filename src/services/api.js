@@ -187,4 +187,37 @@ export const getCourseById = async (id) => {
   return fetch(`${BASE_URL}/courses/${id}`).then(json);
 };
 
+// Enrollments API
+export const createEnrollment = async (enrollmentData) => {
+  return fetch(`${BASE_URL}/enrollments`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(enrollmentData),
+  }).then(json);
+};
+
+export const getAllEnrollments = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const url = `${BASE_URL}/enrollments${query ? `?${query}` : ""}`;
+  return fetch(url).then(json);
+};
+
+export const getEnrollmentById = async (id) => {
+  return fetch(`${BASE_URL}/enrollments/${id}`).then(json);
+};
+
+export const updateEnrollment = async (id, updateData) => {
+  return fetch(`${BASE_URL}/enrollments/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updateData),
+  }).then(json);
+};
+
+export const deleteEnrollment = async (id) => {
+  return fetch(`${BASE_URL}/enrollments/${id}`, {
+    method: "DELETE",
+  }).then(json);
+};
+
 

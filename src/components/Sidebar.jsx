@@ -48,7 +48,7 @@ const menu = [
       { label: "Suspended Parents", path: "/parents/suspended" },
       { label: "Terminated Parents", path: "/parents/terminated" }
     ] },
-  { label: "Enrolment", icon: ClipboardList },
+  { label: "Enrolment", icon: ClipboardList ,path: "/enrollment" },
   { label: "Messages", icon: MessageSquare },
   { label: "Admin profile", icon: UserCog },
   { label: "Invoice", icon: FileText },

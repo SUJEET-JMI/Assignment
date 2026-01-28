@@ -20,6 +20,7 @@ import Course from './pages/Course';
 import CourseProfile from './pages/CourseProfile';
 import Class from './pages/Class';
 import Subject from './pages/Subject';
+import Enrollment from './pages/Enrollment';
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="/subject" element={<Subject/>}/>
             <Route path="/course" element={<Course/>}/>
             <Route path="/course/profile/:id" element={<CourseProfile/>}/>
+            <Route path="/enrollment" element={<Enrollment/>}/>
             <Route path="/" element={<Dashboard />} /> {/* Default to dashboard */}
           </Routes>
         </div>
