@@ -4,7 +4,7 @@ import { theme } from "../theme.js";
 
 export default function Navbar({ collapsed, setCollapsed }) {
   return (
-    <header className="flex items-center justify-between px-6 py-4 bg-white border-b">
+    <header className={`fixed top-0 ${collapsed ? 'left-20' : 'left-64'} right-0 z-10 flex items-center justify-between px-6 py-4 bg-white border-b transition-all duration-300`}>
       {/* Left Section */}
       <div className="flex items-center gap-4">
         {/* Menu Icon */}

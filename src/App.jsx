@@ -27,16 +27,16 @@ export default function App() {
 
   return (
     <Router>
-      <div className="flex">
-        <Sidebar collapsed={collapsed} />
-        <div className="flex-1 overflow-hidden">
-          <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
+      <Sidebar collapsed={collapsed} />
+      <div className={`${collapsed ? 'ml-20' : 'ml-64'} transition-all duration-300`}>
+        <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
+        <div className="mt-16">
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/students" element={<Students />} />
             <Route path="/students/Suspended" element={<SuspendedStudents />} />
             <Route path="/students/terminated" element={<TerminatedStudents />} />
-            <Route path="/students/profile/:id" element={<StudentProfile />} />
+            <Route path="/students/profile/:studentId" element={<StudentProfile />} />
             <Route path="/teacher/pending" element={<PendingTeacher />} />
             <Route path="/teacher" element={<ApprovedTeacher />} />
             <Route path="/teacher/suspended" element={<SuspendedTeacher />} />
@@ -47,7 +47,7 @@ export default function App() {
             <Route path="/parents/terminated" element={<TerminatedParents />} />
             <Route path="/subject" element={<Subject/>}/>
             <Route path="/course" element={<Course/>}/>
-            <Route path="/course/profile/:id" element={<CourseProfile/>}/>
+            <Route path="/course/profile/:courseCode" element={<CourseProfile/>}/>
             <Route path="/enrollment" element={<Enrollment/>}/>
             <Route path="/" element={<Dashboard />} /> {/* Default to dashboard */}
           </Routes>

@@ -117,14 +117,14 @@ const downloadPDF = () => {
   const handleStatusChange = async (index, status) => {
     const student = students[index];
     try {
-      await updateStudentStatus(student.userId, status);
+      await updateStudentStatus(student.studentId, status);
       if (status !== "TERMINATED") {
-        const updated = students.filter(s => s.userId !== student.userId);
+        const updated = students.filter(s => s.studentId !== student.studentId);
         setStudents(updated);
       } else {
         // Update local state if still APPROVED
         const updated = students.map(s =>
-          s.userId === student.userId ? { ...s, status: status } : s
+          s.studentId === student.studentId ? { ...s, status: status } : s
         );
         setStudents(updated);
       }

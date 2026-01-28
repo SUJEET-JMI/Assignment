@@ -17,8 +17,8 @@ export const getStudents = async (params = {}) => {
   return fetch(url).then(json);
 };
 
-export const updateStudentStatus = async (userId, status) => {
-  return fetch(`${BASE_URL}/students/${userId}/status`, {
+export const updateStudentStatus = async (studentId, status) => {
+  return fetch(`${BASE_URL}/students/${studentId}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
@@ -32,8 +32,8 @@ export const getTeachers = async (params = {}) => {
   return fetch(url).then(json);
 };
 
-export const updateTeacherStatus = async (userId, status) => {
-  return fetch(`${BASE_URL}/teachers/${userId}/status`, {
+export const updateTeacherStatus = async (teacherId, status) => {
+  return fetch(`${BASE_URL}/teachers/${teacherId}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
@@ -47,8 +47,8 @@ export const getParents = async (params = {}) => {
   return fetch(url).then(json);
 };
 
-export const updateParentStatus = async (userId, status) => {
-  return fetch(`${BASE_URL}/parents/${userId}/status`, {
+export const updateParentStatus = async (parentId, status) => {
+  return fetch(`${BASE_URL}/parents/${parentId}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
@@ -107,22 +107,22 @@ export const getAllSubjects = async (params = {}) => {
   return fetch(url).then(json);
 };
 
-export const editSubject = async (id, subjectData) => {
-  return fetch(`${BASE_URL}/subjects/${id}`, {
+export const editSubject = async (subjectCode, subjectData) => {
+  return fetch(`${BASE_URL}/subjects/${subjectCode}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(subjectData),
   }).then(json);
 };
 
-export const deleteSubject = async (id) => {
-  return fetch(`${BASE_URL}/subjects/${id}`, {
+export const deleteSubject = async (subjectCode) => {
+  return fetch(`${BASE_URL}/subjects/${subjectCode}`, {
     method: "DELETE",
   }).then(json);
 };
 
-export const updateSubjectStatus = async (id, status) => {
-  return fetch(`${BASE_URL}/subjects/${id}/status`, {
+export const updateSubjectStatus = async (subjectCode, status) => {
+  return fetch(`${BASE_URL}/subjects/${subjectCode}/status`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
@@ -152,7 +152,7 @@ export const getAllCourses = async (params = {}) => {
   const url = `${BASE_URL}/courses${query ? `?${query}` : ""}`;
   return fetch(url).then(json);
 };
-export const editCourse = async (id, courseData) => {
+export const editCourse = async (courseCode, courseData) => {
   const formData = new FormData();
 
   // Append all fields to FormData
@@ -166,25 +166,25 @@ export const editCourse = async (id, courseData) => {
     }
   });
 
-  return fetch(`${BASE_URL}/courses/${id}`, {
+  return fetch(`${BASE_URL}/courses/${courseCode}`, {
     method: "PUT",
     body: formData,
   }).then(json);
 };
-export const deleteCourse = async (id) => {
-  return fetch(`${BASE_URL}/courses/${id}`, {
+export const deleteCourse = async (courseCode) => {
+  return fetch(`${BASE_URL}/courses/${courseCode}`, {
   method: "DELETE",
   }).then(json);
 };
-export const updateCourseStatus = async (id, status) => {
-  return fetch(`${BASE_URL}/courses/${id}/status`, {
+export const updateCourseStatus = async (courseCode, status) => {
+  return fetch(`${BASE_URL}/courses/${courseCode}/status`, {
   method: "PUT",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ status }),
   }).then(json);
 };
-export const getCourseById = async (id) => {
-  return fetch(`${BASE_URL}/courses/${id}`).then(json);
+export const getCourseById = async (courseCode) => {
+  return fetch(`${BASE_URL}/courses/${courseCode}`).then(json);
 };
 
 // Enrollments API
@@ -202,20 +202,20 @@ export const getAllEnrollments = async (params = {}) => {
   return fetch(url).then(json);
 };
 
-export const getEnrollmentById = async (id) => {
-  return fetch(`${BASE_URL}/enrollments/${id}`).then(json);
+export const getEnrollmentById = async (enrollmentCode) => {
+  return fetch(`${BASE_URL}/enrollments/${enrollmentCode}`).then(json);
 };
 
-export const updateEnrollment = async (id, updateData) => {
-  return fetch(`${BASE_URL}/enrollments/${id}`, {
+export const updateEnrollment = async (enrollmentCode, updateData) => {
+  return fetch(`${BASE_URL}/enrollments/${enrollmentCode}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(updateData),
   }).then(json);
 };
 
-export const deleteEnrollment = async (id) => {
-  return fetch(`${BASE_URL}/enrollments/${id}`, {
+export const deleteEnrollment = async (enrollmentCode) => {
+  return fetch(`${BASE_URL}/enrollments/${enrollmentCode}`, {
     method: "DELETE",
   }).then(json);
 };

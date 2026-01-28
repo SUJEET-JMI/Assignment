@@ -116,15 +116,15 @@ const downloadPDF = () => {
   const handleStatusChange = async (index, status) => {
     const student = filteredStudents[index];
     try {
-      await updateStudentStatus(student.userId, status);
+      await updateStudentStatus(student.studentId, status);
       // If status changed to something other than APPROVED, remove from list
       if (status !== "APPROVED") {
-        const updated = students.filter(s => s.userId !== student.userId);
+        const updated = students.filter(s => s.studentId !== student.studentId);
         setStudents(updated);
       } else {
         // Update local state if still APPROVED
         const updated = students.map(s =>
-          s.userId === student.userId ? { ...s, status: status } : s
+          s.studentId === student.studentId ? { ...s, status: status } : s
         );
         setStudents(updated);
       }
@@ -240,14 +240,14 @@ const downloadPDF = () => {
               ) : (
                 filteredStudents.map((s, i) => (
                 <tr
-                  key={s.userId}
+                  key={s.studentId}
                   className="border-t hover:bg-gray-50 whitespace-nowrap"
                 >
                   <td className="px-6 py-5">{i + 1}</td>
 
                   <td className="px-6 py-5">
                     <div
-                      onClick={() => navigate(`/students/profile/${s.userId}`)}
+                      onClick={() => navigate(`/students/profile/${s.studentId}`)}
                       className="flex items-center gap-4 cursor-pointer"
                     >
                       <Avatar name={s.name} image={s.profileImage} />

@@ -4,19 +4,19 @@ import { getCourseById, BACKEND_BASE_URL } from "../services/api";
 import { toast } from "react-toastify";
 
 export default function CourseProfile() {
-  const { id } = useParams();
+  const { courseCode } = useParams();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchCourse();
-  }, [id]);
+  }, [courseCode]);
 
   const fetchCourse = async () => {
     setLoading(true);
     try {
-      const response = await getCourseById(id);
+      const response = await getCourseById(courseCode);
       setCourse(response.data);
     } catch (error) {
       console.error("Failed to fetch course:", error);

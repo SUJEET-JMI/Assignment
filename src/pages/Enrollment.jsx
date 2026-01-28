@@ -9,8 +9,7 @@ import {
   getStudents,
   getAllCourses,
 } from "../services/api";
-
-const STATUS_OPTIONS = ["PENDING", "APPROVED", "REJECTED"];
+const STATUS_OPTIONS = ["PENDING"];
 const PAYMENT_STATUS_OPTIONS = ["UNPAID", "PAID", "FAILED", "REFUNDED"];
 
 export default function Enrollment() {
@@ -23,7 +22,7 @@ export default function Enrollment() {
   const [editingEnrollment, setEditingEnrollment] = useState(null);
   const [formData, setFormData] = useState({
     studentId: "",
-    courseId: "",
+    courseCode: "",
     status: "PENDING",
     paymentStatus: "UNPAID",
     remarks: "",
@@ -130,7 +129,7 @@ export default function Enrollment() {
     setEditingEnrollment(enrollment);
     setFormData({
       studentId: enrollment.studentId,
-      courseId: enrollment.courseId,
+      courseCode: enrollment.courseCode,
       status: enrollment.status,
       paymentStatus: enrollment.paymentStatus,
       remarks: enrollment.remarks || "",
@@ -472,8 +471,8 @@ export default function Enrollment() {
                   >
                     <option value="">Select Student</option>
                     {students.map((student) => (
-                      <option key={student.id} value={student.id}>
-                        {student.name} ({student.email})
+                      <option key={student.studentId} value={student.studentId}>
+                        {student.studentId})
                       </option>
                     ))}
                   </select>
@@ -499,8 +498,8 @@ export default function Enrollment() {
                   >
                     <option value="">Select Course</option>
                     {courses.map((course) => (
-                      <option key={course.id} value={course.id}>
-                        {course.courseName} ({course.courseCode})
+                      <option key={course.courseCode} value={course.courseCode}>
+                        {course.courseName} {course.courseCode}
                       </option>
                     ))}
                   </select>

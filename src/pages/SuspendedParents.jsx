@@ -117,14 +117,14 @@ const downloadPDF = () => {
   const handleStatusChange = async (index, status) => {
     const Parent = SuspendedParents[index];
     try {
-      await updateParentStatus(Parent.userId, status);
+      await updateParentStatus(Parent.parentId, status);
       if (status !== "SUSPENDED") {
-        const updated = Parents.filter(s => s.userId !== Parent.userId);
+        const updated = Parents.filter(s => s.parentId !== Parent.parentId);
         setParents(updated);
       } else {
         // Update local state if still APPROVED
         const updated = Parents.map(s =>
-          s.userId === Parent.userId ? { ...s, status: status } : s
+          s.parentId === Parent.parentId ? { ...s, status: status } : s
         );
         setParents(updated);
       }
@@ -247,14 +247,14 @@ const downloadPDF = () => {
               ) : (
                 filteredSuspendedParents.map((s, i) => (
                   <tr
-                    key={s.userId}
+                    key={s.parentId}
                     className="border-t hover:bg-gray-50 whitespace-nowrap"
                   >
                     <td className="px-6 py-5">{i + 1}</td>
 
                     <td className="px-6 py-5">
                       <div
-                        onClick={() => navigate(`/parents/profile/${s.userId}`)}
+                        onClick={() => navigate(`/parents/profile/${s.parentId}`)}
                         className="flex items-center gap-4 cursor-pointer"
                       >
                         <Avatar name={s.name} image={s.profileImage} />
@@ -313,8 +313,8 @@ const downloadPDF = () => {
                     <td className="px-6 py-5">
                       <input
                         type="checkbox"
-                        checked={selectedSuspendedParents.includes(s.userId)}
-                        onChange={() => toggleSelectOne(s.userId)}
+                        checked={selectedSuspendedParents.includes(s.parentId)}
+                        onChange={() => toggleSelectOne(s.parentId)}
                         className="w-4 h-4"
                       />
                     </td>

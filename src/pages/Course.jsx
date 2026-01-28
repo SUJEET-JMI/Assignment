@@ -150,12 +150,12 @@ export default function Course() {
     setIsPopupOpen(true);
   };
 
-  const handleDeleteCourse = async (id) => {
+  const handleDeleteCourse = async (courseCode) => {
     if (window.confirm("Are you sure you want to delete this course?")) {
       setFullScreenLoading(true);
       try {
-        await deleteCourse(id);
-        setCourses(courses.filter((c) => c.id !== id));
+        await deleteCourse(courseCode);
+        setCourses(courses.filter((c) => c.courseCode !== courseCode));
         toast.success("Course deleted successfully!");
       } catch (err) {
         console.error("Failed to delete course:", err);
@@ -199,10 +199,10 @@ export default function Course() {
     setFullScreenLoading(true);
     try {
       if (editingCourse) {
-        await editCourse(editingCourse.id, formData);
+        await editCourse(editingCourse.courseCode, formData);
         setCourses(
           courses.map((c) =>
-            c.id === editingCourse.id ? { ...c, ...formData } : c,
+            c.courseCode === editingCourse.courseCode ? { ...c, ...formData } : c,
           ),
         );
         toast.success("Course updated successfully!");
@@ -226,11 +226,11 @@ export default function Course() {
 
     setFullScreenLoading(true);
     try {
-      setUpdatingId(course.id);
-      await updateCourseStatus(course.id, newStatus);
+      setUpdatingId(course.courseCode);
+      await updateCourseStatus(course.courseCode, newStatus);
       setCourses((prev) =>
         prev.map((c) =>
-          c.id === course.id ? { ...c, status: newStatus } : c,
+          c.courseCode === course.courseCode ? { ...c, status: newStatus } : c,
         ),
       );
       toast.success(`Course set to ${newStatus}`);
@@ -421,7 +421,7 @@ export default function Course() {
                 <tr
                   key={course.id}
                   className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => navigate(`/course/profile/${course.id}`)}
+                  onClick={() => navigate(`/course/profile/${course.courseCode}`)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -451,7 +451,7 @@ export default function Course() {
                         onClick={(e) => {
                           e.stopPropagation();
                           setOpenMenuId(
-                            openMenuId === course.id ? null : course.id,
+                            openMenuId === course.courseCode ? null : course.courseCode,
                           );
                         }}
                         className={`px-3 py-1 text-sm border rounded text-white flex items-center gap-1 ${getStatusColor(
@@ -462,10 +462,10 @@ export default function Course() {
                         {course.status}
                       </button>
 
-                      {openMenuId === course.id && (
+                      {openMenuId === course.courseCode && (
                         <div className="absolute right-0 mt-2 w-36 bg-white border rounded shadow-lg z-50">
                           <button
-                            disabled={updatingId === course.id}
+                            disabled={updatingId === course.courseCode}
                             onClick={() => handleStatusChange(course, "Active")}
                             className={`w-full px-4 py-2 text-left text-sm ${
                               course.status === "Active"
@@ -476,7 +476,7 @@ export default function Course() {
                             Activate
                           </button>
                           <button
-                            disabled={updatingId === course.id}
+                            disabled={updatingId === course.courseCode}
                             onClick={() => handleStatusChange(course, "Pending")}
                             className={`w-full px-4 py-2 text-left text-sm ${
                               course.status === "Pending"
@@ -487,7 +487,7 @@ export default function Course() {
                             Pending
                           </button>
                           <button
-                            disabled={updatingId === course.id}
+                            disabled={updatingId === course.courseCode}
                             onClick={() => handleStatusChange(course, "Rejected")}
                             className={`w-full px-4 py-2 text-left text-sm ${
                               course.status === "Rejected"
@@ -515,7 +515,7 @@ export default function Course() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteCourse(course.id);
+                          handleDeleteCourse(course.courseCode);
                         }}
                         className="text-red-600 hover:text-red-900"
                       >

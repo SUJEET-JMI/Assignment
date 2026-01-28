@@ -149,12 +149,12 @@ export default function Subject() {
     setIsPopupOpen(true);
   };
 
-  const handleDeleteSubject = async (id) => {
+  const handleDeleteSubject = async (subjectCode) => {
     if (window.confirm("Are you sure you want to delete this subject?")) {
       setFullScreenLoading(true);
       try {
-        await deleteSubject(id);
-        setSubjects(subjects.filter((s) => s.id !== id));
+        await deleteSubject(subjectCode);
+        setSubjects(subjects.filter((s) => s.subjectCode !== subjectCode));
         toast.success("Subject deleted successfully!");
       } catch (err) {
         console.error("Failed to delete subject:", err);
@@ -183,10 +183,10 @@ export default function Subject() {
       if (editingSubject) {
         // Exclude subjectName from update as it's not allowed in backend
         const { subjectName, ...updateData } = updatedFormData;
-        await editSubject(editingSubject.id, updateData);
+        await editSubject(editingSubject.subjectCode, updateData);
         setSubjects(
           subjects.map((s) =>
-            s.id === editingSubject.id ? { ...s, ...updateData } : s,
+            s.subjectCode === editingSubject.subjectCode ? { ...s, ...updateData } : s,
           ),
         );
         toast.success("Subject updated successfully!");
@@ -211,13 +211,13 @@ export default function Subject() {
 
     setFullScreenLoading(true);
     try {
-      setUpdatingId(subject.id);
+      setUpdatingId(subject.subjectCode);
 
-      await updateSubjectStatus(subject.id, newStatus);
+      await updateSubjectStatus(subject.subjectCode, newStatus);
 
       setSubjects((prev) =>
         prev.map((s) =>
-          s.id === subject.id ? { ...s, status: newStatus } : s,
+          s.subjectCode === subject.subjectCode ? { ...s, status: newStatus } : s,
         ),
       );
 
@@ -387,7 +387,7 @@ export default function Subject() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {subjects.map((subject) => (
             <div
-              key={subject.id}
+              key={subject.subjectCode}
               className="bg-white p-6 rounded-lg shadow-md border hover:shadow-lg transition-shadow"
             >
               <div className="flex items-start justify-between">
@@ -419,7 +419,7 @@ export default function Subject() {
                       onClick={(e) => {
                         e.stopPropagation();
                         setOpenMenuId(
-                          openMenuId === subject.id ? null : subject.id,
+                          openMenuId === subject.subjectCode ? null : subject.subjectCode,
                         );
                       }}
                       className={`px-3 py-1 text-sm border rounded text-white flex items-center gap-1 ${
@@ -433,11 +433,11 @@ export default function Subject() {
                     </button>
 
                     {/* DROPDOWN MENU */}
-                    {openMenuId === subject.id && (
+                    {openMenuId === subject.subjectCode && (
                       <div className="absolute right-0 mt-2 w-36 bg-white border rounded shadow-lg z-50">
                         {/* ACTIVE OPTION */}
                         <button
-                          disabled={updatingId === subject.id}
+                          disabled={updatingId === subject.subjectCode}
                           onClick={() => handleStatusChange(subject, "ACTIVE")}
                           className={`w-full px-4 py-2 text-left text-sm
           ${
@@ -452,7 +452,7 @@ export default function Subject() {
 
                         {/* INACTIVE OPTION */}
                         <button
-                          disabled={updatingId === subject.id}
+                          disabled={updatingId === subject.subjectCode}
                           onClick={() =>
                             handleStatusChange(subject, "INACTIVE")
                           }
@@ -482,7 +482,7 @@ export default function Subject() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteSubject(subject.id);
+                      handleDeleteSubject(subject.subjectCode);
                     }}
                     className="p-1 text-red-600 hover:bg-red-50 rounded"
                   >

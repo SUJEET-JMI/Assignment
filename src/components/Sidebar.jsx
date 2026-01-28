@@ -65,19 +65,24 @@ export default function Sidebar({ collapsed }) {
   };
   return (
     <aside
-      className={`min-h-screen bg-white border-r flex flex-col transition-all duration-300 ${
+      className={`fixed left-0 top-0 h-screen border-r flex flex-col transition-all duration-300 overflow-y-auto ${
         collapsed ? "w-20" : "w-64"
       }`}
+      style={{ backgroundColor: theme.colors.sidebar }}
     >
     
 
       {/* Logo */}
       <div
-        className={`flex items-center gap-2 px-6 py-5 text-xl font-bold text-indigo-600 transition-all duration-300 ${
+        className={`flex items-center gap-2 px-6 py-5 text-xl font-bold transition-all duration-300 ${
           collapsed ? "justify-center" : ""
         }`}
+        style={{ color: theme.colors.success }}
       >
-        <div className="w-8 h-8 bg-indigo-600 text-white flex items-center justify-center rounded-lg">
+        <div
+          className="w-8 h-8 text-white flex items-center justify-center rounded-lg"
+          style={{ backgroundColor: theme.colors.success }}
+        >
           C
         </div>
         {!collapsed && theme.logo.text}
@@ -92,6 +97,7 @@ export default function Sidebar({ collapsed }) {
 
           if (item.submenu) {
             const isOpen = openMenu === item.label;
+            const isParentActive = item.submenu.some(sub => location.pathname === sub.path);
 
             return (
               <div key={item.label}>
@@ -100,8 +106,8 @@ export default function Sidebar({ collapsed }) {
                   onClick={() => toggleMenu(item.label)}
                   className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors
                     ${
-                      location.pathname.startsWith("/students")
-                        ? "bg-indigo-50 text-indigo-600 font-semibold"
+                      isParentActive
+                        ? "bg-green-50 text-green-600 font-semibold"
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                 >
@@ -130,12 +136,19 @@ export default function Sidebar({ collapsed }) {
                       <Link
                         key={sub.label}
                         to={sub.path}
-                        className={`block px-3 py-2 text-sm rounded-md transition
-                          ${
-                            location.pathname === sub.path
-                              ? "bg-indigo-100 text-indigo-700 font-medium"
-                              : "text-gray-500 hover:bg-gray-100"
-                          }`}
+                        className={`block px-3 py-2 text-sm rounded-md transition ${
+                          location.pathname === sub.path
+                            ? "font-medium"
+                            : "text-gray-500 hover:bg-gray-100"
+                        }`}
+                        style={
+                          location.pathname === sub.path
+                            ? {
+                                backgroundColor: theme.colors.secondary,
+                                color: theme.colors.success,
+                              }
+                            : {}
+                        }
                       >
                         {sub.label}
                       </Link>
@@ -151,12 +164,19 @@ export default function Sidebar({ collapsed }) {
             <Link
               key={item.label}
               to={item.path || "#"}
-              className={`flex items-center px-4 py-2 rounded-lg transition-colors
-                ${
-                  isActive
-                    ? "bg-indigo-50 text-indigo-600 font-semibold"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+              className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                isActive
+                  ? "font-semibold"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+              style={
+                isActive
+                  ? {
+                      backgroundColor: theme.colors.secondary,
+                      color: theme.colors.success,
+                    }
+                  : {}
+              }
             >
               <Icon className="w-5 h-5" />
               {!collapsed && (

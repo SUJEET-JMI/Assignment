@@ -1,7 +1,7 @@
-# TODO: Add Search and Download Functionality to Students Page
+# TODO: Fix Navbar and Sidebar Scrolling
 
-- [ ] Add search state and onChange handler to filter students by name (case-insensitive)
-- [ ] Implement downloadExcel function using xlsx library to export student data to Excel
-- [ ] Implement downloadWord function using docx library to export student data to Word document
-- [ ] Update the button onClick handlers to call these download functions (change PDF to Word)
-- [ ] Test the search functionality and verify downloads work correctly
+- [ ] Modify App.jsx: Remove flex layout, add margin-left to main content based on sidebar width
+- [ ] Modify Sidebar.jsx: Add fixed positioning, height 100vh, overflow-y auto
+- [ ] Modify Navbar.jsx: Make it fixed at top with left margin for sidebar
+- [ ] Test scrolling behavior
+- [ ] Ensure collapsed/expanded states work properly
